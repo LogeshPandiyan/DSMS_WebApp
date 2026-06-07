@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --color-primary-50: #ecfdf5;
+    --color-primary-100: #d1fae5;
+    --color-primary-200: #a7f3d0;
+    --color-primary-300: #6ee7b7;
+    --color-primary-400: #34d399;
+    --color-primary-500: #12b79f;
+    --color-primary-600: #0e9e8a;
+    --color-primary-700: #0b8271;
+    --color-primary-800: #096a5d;
+    --color-primary-900: #064e45;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50;
+}
+
+/* Premium Unified Dark Mode Styles */
+.dark .bg-slate-900,
+.dark .dark\:bg-slate-900,
+.dark .bg-white.dark\:bg-slate-900 {
+    background-color: #020617 !important; /* Match the gorgeous, rich dark background */
+}
+
+/* Elegant, eye-pleasing input and inner container dark mode backgrounds */
+.dark .bg-slate-50,
+.dark .dark\:bg-slate-800\/50,
+.dark .bg-slate-50\/50,
+.dark .dark\:bg-slate-800 {
+    background-color: #080d1a !important; /* Slightly lighter deep slate for excellent readability */
+}
+
+/* Elegant, highly-readable borders in dark mode */
+.dark .border-slate-200,
+.dark .dark\:border-slate-800,
+.dark .dark\:border-slate-700 {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Softer, highly readable typography in dark mode (prevents text-slate-900 from becoming invisible) */
+.dark body {
+    color: #cbd5e1 !important; /* Softer primary body text (slate-300) */
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-slate-600 {
+    color: #94a3b8 !important; /* Softer slate-400 for secondary text and labels */
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark .font-bold.text-slate-900,
+.dark .font-black.text-slate-900,
+.dark .font-bold.text-slate-800,
+.dark .font-bold.text-slate-700 {
+    color: #e2e8f0 !important; /* Softer premium slate-200 for headings and strong titles */
+}
+
+.dark .text-white,
+.dark .dark\:text-white,
+.dark .dark\:text-slate-50,
+.dark .dark\:text-slate-100 {
+    color: #cbd5e1 !important; /* Softer slate-300 instead of glaring blinding white */
+}
+
+/* Premium brand teal dark-mode corrections (fixes hex CSS variables opacity composition caveat) */
+.dark .bg-primary-50,
+.dark .dark\:bg-primary-900\/20,
+.dark .bg-primary-50\/50 {
+    background-color: rgba(18, 183, 159, 0.12) !important; /* Soft, premium semitransparent teal overlay */
+    border-color: rgba(18, 183, 159, 0.4) !important;
+}
+
+.dark .text-primary-700,
+.dark .dark\:text-primary-400,
+.dark .text-primary-600 {
+    color: #12b79f !important; /* Soft brand teal instead of hardcoded dark green */
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors;
+}
+
+/* Smooth transition and outline reset for all inputs to prevent blinking */
+input,
+select,
+textarea {
+    outline: none !important;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+}
+
+/* Tactile Glow Focus Rings for all inputs */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 0 0 3px rgba(203, 213, 225, 0.5) !important;
+    outline: none !important;
+}
+
+/* Elegant bright gray focus state for dark mode */
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+    border-color: #94a3b8 !important; /* Brighter gray */
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.25) !important;
+}
+
+/* Dashed Brand Green Border & Hover Fill for PDF upload area in dark mode */
+.dark .border-dashed {
+    border-style: dashed !important;
+    border-color: rgba(18, 183, 159, 0.3) !important;
+    background-color: transparent !important;
+    transition: all 0.25s ease-in-out !important;
+}
+.dark .border-dashed:hover {
+    border-color: #12b79f !important;
+    background-color: rgba(18, 183, 159, 0.05) !important;
+}
+
+/* Sidebar & Header Premium Solid Slate-950 Background (Unified with Profile & Canvas) */
+.dark aside,
+.dark header,
+.dark .dark\:bg-slate-900\/50 {
+    background-color: #020617 !important; /* Unified with the premium dark background (#020617) */
+    backdrop-filter: none !important;
+}
