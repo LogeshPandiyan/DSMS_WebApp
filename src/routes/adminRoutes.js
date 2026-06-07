@@ -1,0 +1,17 @@
+const express = require('express');
+const router = express.Router();
+const { getUsers, updateUserRole, deleteUser } = require('../controllers/adminController');
+const { getAuditLogs } = require('../controllers/auditController');
+
+const { protect, adminOnly, adminOrManagerOnly } = require('../middlewares/authMiddleware');
+
+// All routes here are protected
+router.use(protect);
+
+router.get('/users/get-all', adminOrManagerOnly, getUsers);
+router.put('/users/update-role/:id', adminOnly, updateUserRole);
+router.delete('/users/delete/:id', adminOnly, deleteUser);
+router.get('/logs/get-all', adminOnly, getAuditLogs);
+
+
+module.exports = router;
