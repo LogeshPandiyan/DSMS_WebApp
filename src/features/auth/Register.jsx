@@ -89,7 +89,7 @@ const Register = () => {
                         <div className="h-10 w-10 bg-primary-600 rounded-[5px] flex items-center justify-center shadow-lg shadow-primary-600/20">
                             <ShieldCheck className="h-6 w-6 text-white" />
                         </div>
-                        <span className="text-xl font-black text-white tracking-tight capitalize">EliteSign Pro</span>
+                        <span className="text-xl font-black text-white tracking-tight capitalize">Techno Tackle</span>
                     </div>
 
                     <div className="space-y-6">

@@ -10,11 +10,16 @@ import {
     UserCircle, 
     ShieldAlert, 
     Briefcase,
-    Loader2
+    Loader2,
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAllUsers, updateUserRole, deleteUser } from '../../services/adminService';
+import { getAllUsers, updateUserRole, deleteUser, toggleUserStatus } from '../../services/adminService';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import InviteUserOffcanvas from './InviteUserOffcanvas';
+import { UserPlus } from 'lucide-react';
 
 const PortalUserTab = ({ currentUser }) => {
     const [users, setUsers] = useState([]);
@@ -23,30 +28,43 @@ const PortalUserTab = ({ currentUser }) => {
     const [openDropdownId, setOpenDropdownId] = useState(null);
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, userId: null });
     const [roleModal, setRoleModal] = useState({ isOpen: false, userId: null, newRole: null, currentRole: null, userName: '' });
+    const [toggleModal, setToggleModal] = useState({ isOpen: false, userId: null, isActive: null, userName: '' });
+    const [showInviteOffcanvas, setShowInviteOffcanvas] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [rowsPerPageOpen, setRowsPerPageOpen] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter]);
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getAllUsers();
+            const response = await getAllUsers(statusFilter);
             setUsers(response.data);
         } catch {
             toast.error('Failed to fetch users');
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [statusFilter]);
 
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
 
     useEffect(() => {
-        const handleClickOutside = () => setOpenDropdownId(null);
-        if (openDropdownId) {
+        const handleClickOutside = () => {
+            setOpenDropdownId(null);
+            setRowsPerPageOpen(false);
+        };
+        if (openDropdownId || rowsPerPageOpen) {
             document.addEventListener('click', handleClickOutside);
         }
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [openDropdownId]);
+    }, [openDropdownId, rowsPerPageOpen]);
 
     const handleDeleteConfirm = async () => {
         if (!deleteModal.userId) return;
@@ -54,8 +72,21 @@ const PortalUserTab = ({ currentUser }) => {
             await deleteUser(deleteModal.userId);
             toast.success('User deleted successfully');
             fetchUsers();
-        } catch {
+            setDeleteModal({ isOpen: false, userId: null, userName: '' });
+        } catch (error) {
             toast.error('Failed to delete user');
+        }
+    };
+
+    const handleToggleConfirm = async () => {
+        if (!toggleModal.userId) return;
+        try {
+            await toggleUserStatus(toggleModal.userId);
+            toast.success(`User account has been ${toggleModal.isActive !== false ? 'deactivated' : 'activated'}`);
+            fetchUsers();
+            setToggleModal({ isOpen: false, userId: null, isActive: null, userName: '' });
+        } catch (error) {
+            toast.error('Failed to update user status');
         }
     };
 
@@ -77,6 +108,7 @@ const PortalUserTab = ({ currentUser }) => {
             await updateUserRole(userId, newRole);
             toast.success(`Role updated to ${newRole}`);
             fetchUsers();
+            setRoleModal({ isOpen: false, userId: null, newRole: null, currentRole: null, userName: '' });
         } catch {
             toast.error('Failed to update role');
         }
@@ -114,20 +146,48 @@ const PortalUserTab = ({ currentUser }) => {
         user.role?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-[10px]">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-slate-800 rounded-[5px]">
                 <p className="text-sm text-slate-500 font-medium">Manage platform users and their access levels.</p>
-                <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
-                    <input 
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search users..."
-                        className="w-full md:w-72 pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] text-sm font-medium focus:border-slate-400 dark:focus:border-slate-600 outline-none transition-all"
-                    />
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="relative">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="h-[42px] pl-3 pr-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] text-sm font-medium focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all appearance-none cursor-pointer text-slate-700 dark:text-slate-300"
+                        >
+                            <option value="all">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">In-Active</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative group flex-1 md:flex-none">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
+                        <input 
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search users..."
+                            className="w-full md:w-72 pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] text-sm font-medium focus:border-slate-400 dark:focus:border-slate-600 outline-none transition-all"
+                        />
+                    </div>
+                    {currentUser?.role === 'admin' && (
+                        <button 
+                            onClick={() => setShowInviteOffcanvas(true)}
+                            className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-[5px] text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors"
+                        >
+                            <UserPlus className="h-4 w-4" />
+                            <span>Add User</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -155,23 +215,29 @@ const PortalUserTab = ({ currentUser }) => {
                 ))}
             </div>
 
-            {/* Users Table */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="relative">
+                <div className="w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full" style={{ scrollbarWidth: 'thin' }}>
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/50">
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 w-20 text-center">Actions</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">User details</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Email address</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Access level</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Joined on</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 w-20 text-center">Action</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">User Name</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Email</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Designation</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Department</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Role</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Invitation Status</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Invitation Link</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Password Updated At</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Action</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Added At</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Status Modified By</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-20 text-center">
+                                    <td colSpan="12" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <Loader2 className="h-6 w-6 text-primary-600 animate-spin" />
                                             <span className="text-xs font-medium text-slate-500 tracking-widest">Fetching user database...</span>
@@ -180,16 +246,15 @@ const PortalUserTab = ({ currentUser }) => {
                                 </tr>
                             ) : filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-20 text-center">
+                                    <td colSpan="12" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3 opacity-40">
                                             <Users className="h-12 w-12 text-slate-400" />
                                             <p className="text-sm font-medium text-slate-500 tracking-widest">No matching users found</p>
                                         </div>
                                     </td>
                                 </tr>
-                            ) : (
-                                filteredUsers.map((user, index) => (
-                                    <tr key={user._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                            ) : currentItems.map((user, index) => (
+                                    <tr key={user._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center relative">
                                                 <button 
@@ -206,7 +271,7 @@ const PortalUserTab = ({ currentUser }) => {
                                                 </button>
 
                                                 {openDropdownId === user._id && (
-                                                    <div className={`absolute ${index > 0 && index >= filteredUsers.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} -left-2 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-150`}>
+                                                    <div className={`absolute ${index > 0 && index >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} -left-2 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-150`}>
                                                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                                                             <p className="text-[10px] font-medium text-slate-400 tracking-widest">Modify access</p>
                                                         </div>
@@ -259,25 +324,123 @@ const PortalUserTab = ({ currentUser }) => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">{user.jobTitle || '-'}</span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">{user.department || '-'}</span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-medium tracking-wider ${getRoleBadgeStyle(user.role)}`}>
                                                 {getRoleIcon(user.role)}
                                                 {user.role}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
-                                            {new Date(user.createdAt).toLocaleDateString(undefined, { 
-                                                year: 'numeric', 
-                                                month: 'short', 
-                                                day: 'numeric' 
-                                            })}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            {user.isInvited ? <span className="text-slate-500">Sent</span> : <span className="text-emerald-500">Accepted</span>}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {user.isInvited ? (
+                                                <button className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-full text-[11px] font-medium transition-colors shadow-sm">Link</button>
+                                            ) : (
+                                                <span className="text-[13px] text-slate-400">No link found</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
+                                            {user.passwordUpdatedAt ? new Date(user.passwordUpdatedAt).toLocaleString('en-GB') : '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <div 
+                                                    className={`w-9 h-5 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${user.isActive !== false ? 'bg-primary-500' : 'bg-slate-300'}`}
+                                                    onClick={() => setToggleModal({
+                                                        isOpen: true,
+                                                        userId: user._id,
+                                                        isActive: user.isActive,
+                                                        userName: user.name
+                                                    })}
+                                                >
+                                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${user.isActive !== false ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                                </div>
+                                                <span className="text-[11px] font-medium text-slate-600">{user.isActive !== false ? 'Active' : 'Inactive'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
+                                            {new Date(user.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
+                                            {user.statusChangedBy ? `${user.isActive !== false ? 'Activated by' : 'Deactivated by'} ${user.statusChangedBy}` : '-'}
                                         </td>
                                     </tr>
                                 ))
-                            )}
+                            }
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {filteredUsers.length > 0 && (
+                <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between mt-[-10px] shadow-sm rounded-b-lg">
+                    <p className="text-xs text-slate-500 font-bold capitalize tracking-wide hidden md:block">
+                        Page {currentPage} of {totalPages || 1}
+                    </p>
+                    <div className="flex items-center gap-4 ml-auto">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">Rows per page:</span>
+                            <div className="relative">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setRowsPerPageOpen(!rowsPerPageOpen);
+                                    }}
+                                    className={`flex items-center gap-3 bg-white dark:bg-slate-900 border text-xs font-bold text-slate-700 dark:text-slate-300 rounded-[5px] pl-3 pr-2 py-1.5 transition-all min-w-[64px] justify-between
+                                        ${rowsPerPageOpen ? 'border-primary-500 ring-1 ring-primary-500/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
+                                >
+                                    {itemsPerPage}
+                                    <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${rowsPerPageOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {rowsPerPageOpen && (
+                                    <div className="absolute bottom-full mb-2 left-0 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-[100] p-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                        {[10, 20, 30, 40].map(val => (
+                                            <button
+                                                key={val}
+                                                onClick={() => {
+                                                    setItemsPerPage(val);
+                                                    setCurrentPage(1);
+                                                    setRowsPerPageOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3 py-2 text-xs font-bold rounded-[3px] transition-colors
+                                                    ${itemsPerPage === val 
+                                                        ? 'bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white' 
+                                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                                            >
+                                                {val}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                disabled={currentPage <= 1}
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                className="h-9 w-9 rounded-[5px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 disabled:opacity-30 transition-all hover:bg-slate-50"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                                disabled={currentPage >= totalPages || totalPages === 0}
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                className="h-9 w-9 rounded-[5px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 disabled:opacity-30 transition-all hover:bg-slate-50"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <ConfirmationModal
                 isOpen={deleteModal.isOpen}
@@ -299,6 +462,23 @@ const PortalUserTab = ({ currentUser }) => {
                 confirmText="Modify access"
                 variant="primary"
                 icon={Shield}
+            />
+
+            <ConfirmationModal
+                isOpen={toggleModal.isOpen}
+                onClose={() => setToggleModal({ isOpen: false, userId: null, isActive: null, userName: '' })}
+                onConfirm={handleToggleConfirm}
+                title={toggleModal.isActive !== false ? "Deactivate Account" : "Activate Account"}
+                message={`Are you sure you want to ${toggleModal.isActive !== false ? 'deactivate' : 'activate'} the account for ${toggleModal.userName}?`}
+                confirmText={toggleModal.isActive !== false ? "Deactivate" : "Activate"}
+                variant={toggleModal.isActive !== false ? "danger" : "primary"}
+                icon={toggleModal.isActive !== false ? ShieldAlert : CheckCircle2}
+            />
+
+            <InviteUserOffcanvas  
+                isOpen={showInviteOffcanvas}
+                onClose={() => setShowInviteOffcanvas(false)}
+                onUserInvited={fetchUsers}
             />
         </div>
     );

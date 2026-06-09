@@ -1,9 +1,9 @@
 import API from '../api/axiosConfig';
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (status = 'all') => {
     try {
-        const usersListResponse = await API.get('/admin/users/get-all');
-        return usersListResponse.data;
+        const response = await API.get(`/admin/users/get-all?status=${status}`);
+        return response.data;
     } catch (error) {
         console.error('Error in getAllUsers:', error.response?.data || error.message);
         throw error;
@@ -26,6 +26,16 @@ export const deleteUser = async (userId) => {
         return deletedUserResponse.data;
     } catch (error) {
         console.error('Error in deleteUser:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const toggleUserStatus = async (userId) => {
+    try {
+        const toggleResponse = await API.put(`/admin/users/toggle-status/${userId}`);
+        return toggleResponse.data;
+    } catch (error) {
+        console.error('Error in toggleUserStatus:', error.response?.data || error.message);
         throw error;
     }
 };

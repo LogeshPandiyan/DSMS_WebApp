@@ -48,7 +48,7 @@ const ResetPassword = () => {
                         <div className="h-10 w-10 bg-[#12b79f] rounded-[5px] flex items-center justify-center shadow-lg shadow-[#12b79f]/20">
                             <ShieldCheck className="h-6 w-6 text-white" />
                         </div>
-                        <span className="text-2xl font-black text-white tracking-tighter">EliteSign Pro</span>
+                        <span className="text-2xl font-black text-white tracking-tighter">Techno Tackle</span>
                     </div>
 
                     <div className="space-y-6">

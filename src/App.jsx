@@ -12,6 +12,7 @@ import AuditLogs from './pages/audit-logs/AuditLogs';
 import Settings from './pages/settings/Settings';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ResetPassword from './features/auth/ResetPassword';
+import SetupAccount from './features/auth/SetupAccount';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout';
 import { Toaster } from 'sonner';
@@ -22,11 +23,11 @@ function App() {
       <Toaster richColors position="bottom-right" />
       <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
         <Routes>
-          <Route path="/" element={<Navigate to="/register" />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/setup-account/:token" element={<SetupAccount />} />
 
           {/* Protected Routes using MainLayout for stable UI */}
           <Route element={<ProtectedRoute />}>

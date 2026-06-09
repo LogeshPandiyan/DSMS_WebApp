@@ -33,9 +33,14 @@ const Dashboard = () => {
     const currentDayIdx = new Date().getDay();
 
     useEffect(() => {
-        const hour = new Date().getHours();
+        const now = new Date();
+        const hour = now.getHours();
+        const minutes = now.getMinutes();
+        const timeInMinutes = hour * 60 + minutes;
+
         if (hour < 12) setGreeting('Good Morning');
         else if (hour < 18) setGreeting('Good Afternoon');
+        else if (timeInMinutes >= 19 * 60 + 30) setGreeting('Good Night');
         else setGreeting('Good Evening');
 
         const fetchStats = async () => {
@@ -77,9 +82,13 @@ const Dashboard = () => {
                 >
                     <Icon className="h-6 w-6" />
                 </div>
-                <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-black tracking-wide capitalize text-slate-500">{label}</span>
-                    <span className="text-2xl font-black text-slate-900 dark:text-white mt-1">{value}</span>
+                <div className="flex-1 flex flex-row items-center justify-between pl-4">
+                    <span className="text-[12px] font-black tracking-wide capitalize text-slate-500">
+                        {label}
+                    </span>
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">
+                        {value}
+                    </span>
                 </div>
             </div>
         </div>
@@ -98,12 +107,20 @@ const Dashboard = () => {
                     <div className="flex-1 space-y-6">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#12b79f]/10 rounded-full">
                             <Zap className="h-3 w-3" style={{ color: brandColor }} />
-                            <span className="text-[10px] font-black capitalize tracking-wide" style={{ color: brandColor }}>System Online</span>
+                            <span
+                                className="text-[10px] font-black capitalize tracking-wide"
+                                style={{ color: brandColor }}>
+                                System Online
+                            </span>
                         </div>
 
                         <div className="space-y-2">
                             <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                                {greeting}, <span style={{ color: brandColor }}>{user?.name}!</span>
+                                {greeting}, 
+                                <span 
+                                style={{ color: brandColor }}>
+                                    {user?.name}!
+                            </span>
                             </h2>
                             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md font-medium leading-relaxed">
                                 {user?.role === 'admin'
@@ -153,7 +170,7 @@ const Dashboard = () => {
                 <StatCard icon={Clock} label="Pending Reviews" value={stats?.pendingDocuments || '0'} color="#F59E0B" delay={100} />
                 <StatCard icon={CheckCircle2} label="Signed Docs" value={stats?.signedDocuments || '0'} color="#10B981" delay={200} />
                 <StatCard icon={FileText} label="Total Records" value={stats?.totalDocuments || '0'} color={brandColor} delay={300} />
-                <StatCard icon={UserIcon} label="System Users" value={stats?.totalUsers || '0'} color="#6366F1" delay={400} />
+                <StatCard icon={UserIcon} label="Portal Users" value={stats?.totalUsers || '0'} color="#6366F1" delay={400} />
             </div>
 
             {/* Activity & Quick Actions Section */}
@@ -183,10 +200,15 @@ const Dashboard = () => {
                             const total = data.pending + data.signed;
                                 const isToday = i === currentDayIdx;
 
-                            // Find max total to scale
-                            const allTotals = stats?.weeklyActivity?.map(d => d.pending + d.signed) || [1];
-                            const maxTotal = Math.max(...allTotals, 1);
-                            const barHeight = total > 0 ? (total / maxTotal) * 100 : 8;
+                            // Find max total to scale (minimum ceiling of 5 to ensure step-by-step scaling)
+                            const allTotals = stats?.weeklyActivity?.map(d => d.pending + d.signed) || [];
+                            const maxTotal = Math.max(5, ...allTotals);
+                            
+                            // Calculate height: ~20% (approx 50px) for 1 doc if max is 5.
+                            let barHeight = 8; // Default empty height
+                            if (total > 0) {
+                                barHeight = Math.max(15, (total / maxTotal) * 100);
+                            }
 
                                 return (
                                 <div key={day} className="flex-1 flex flex-col items-center gap-4 group/bar h-full justify-end relative">
