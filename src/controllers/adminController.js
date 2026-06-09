@@ -6,7 +6,17 @@ const { createAuditLog } = require('../utils/auditLogger');
 // @access  Private/Admin
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find({}).select('-password');
+        const { status } = req.query;
+        let query = {};
+        
+        if (status === 'active') {
+            query.isActive = { $ne: false };
+        } 
+        else if (status === 'inactive') {
+            query.isActive = false;
+        }
+
+        const users = await User.find(query).select('-password');
         res.status(200).json({
             success: true,
             message: 'All users fetched successfully',
@@ -123,4 +133,58 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = {getUsers, updateUserRole, deleteUser};
+// @desc    Toggle user active status
+// @route   PUT /api/admin/users/toggle-status/:id
+// @access  Private/Admin
+const toggleUserStatus = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                statusCode: 404,
+                message: 'User not found' 
+            });
+        }
+
+        if (user._id.toString() === req.user._id.toString()) {
+            return res.status(400).json({ 
+                success: false, 
+                statusCode: 400,
+                message: 'Administrators cannot deactivate themselves' 
+            });
+        }
+
+        user.isActive = !user.isActive;
+        user.statusChangedBy = req.user.name || req.user.email || 'Admin';
+        
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: `User account has been ${user.isActive ? 'activated' : 'deactivated'}`,
+            data: user
+        });
+
+        // Audit Log
+        await createAuditLog({
+            user: req.user,
+            action: 'USER_STATUS_TOGGLED',
+            details: `User ${user.name} (${user.email}) status changed to ${user.isActive ? 'active' : 'inactive'}`,
+            targetType: 'user',
+            targetId: user._id,
+            req
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            statusCode: 500,
+            message: error.message 
+        });
+    }
+};
+
+module.exports = {getUsers, updateUserRole, deleteUser, toggleUserStatus};
+

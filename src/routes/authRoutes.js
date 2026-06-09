@@ -10,7 +10,9 @@ const {
     updateProfile,
     updateSignature,
     updateNotifications,
-    updatePassword
+    updatePassword,
+    inviteUser,
+    setupPassword
 } = require('../controllers/authController');
 const { protect } = require('../middlewares/authMiddleware');
 
@@ -20,8 +22,11 @@ router.post('/logout', logoutUser);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 
+router.post('/setup-password/:token', setupPassword);
+
 // Protected routes
 router.get('/me', protect, getMe);
+router.post('/invite', protect, inviteUser);
 router.put('/profile', protect, updateProfile);
 router.put('/signature', protect, updateSignature);
 router.put('/notifications', protect, updateNotifications);

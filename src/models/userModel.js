@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema(
         },
         password: {
             type: String,
-            required: [true, 'User password is required.'],
+            required: [function() { return !this.isInvited; }, 'User password is required.'],
             minlength: [6, 'Password must be at least 6 characters long'],
             maxlength: [20, 'Password cannot exceed 20 characters'],
             trim: true,
@@ -67,8 +67,14 @@ const userSchema = mongoose.Schema(
             documentRequest: { type: Boolean, default: true },
             documentCompleted: { type: Boolean, default: true }
         },
+        isInvited: { type: Boolean, default: false },
+        inviteToken: String,
+        inviteTokenExpire: Date,
         resetPasswordToken: String,
-        resetPasswordExpire: Date
+        resetPasswordExpire: Date,
+        isActive: { type: Boolean, default: true },
+        passwordUpdatedAt: { type: Date },
+        activatedBy: { type: String, default: '-' }
     },
     {
         timestamps: true,
