@@ -81,7 +81,7 @@ const SignDocument = () => {
                 return toast.error('Please provide your signature');
             }
             signatureData = sigPad.current.toDataURL('image/png');
-        } else {
+        } else if (sigType === 'type') {
             if (!typedName.trim()) {
                 return toast.error('Please type your name');
             }
@@ -95,7 +95,13 @@ const SignDocument = () => {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(typedName, 300, 100);
+            ctx.fillText(typedName, 300, 100);
             signatureData = canvas.toDataURL('image/png');
+        } else if (sigType === 'saved') {
+            if (!currentUser?.signature) {
+                return toast.error('No saved signature found. Please save one in Settings first.');
+            }
+            signatureData = currentUser.signature;
         }
 
         setFieldSignatures(prev => ({
@@ -406,6 +412,13 @@ const SignDocument = () => {
                                         <Keyboard className="h-3 w-3" />
                                         Type
                                     </button>
+                                    <button 
+                                        onClick={() => setSigType('saved')}
+                                        className={`px-3 py-1 text-[10px] font-black capitalize tracking-wide rounded-[4px] transition-all flex items-center gap-2 ${sigType === 'saved' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        <ShieldCheck className="h-3 w-3" />
+                                        Saved
+                                    </button>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -439,7 +452,7 @@ const SignDocument = () => {
                                         }}
                                     />
                                 </div>
-                            ) : (
+                            ) : sigType === 'type' ? (
                                 <div className="space-y-4">
                                     <div className="relative p-6 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[5px] flex items-center justify-center h-[280px] shadow-sm">
                                         <input 
@@ -452,9 +465,25 @@ const SignDocument = () => {
                                         />
                                     </div>
                                 </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="relative p-6 bg-white dark:bg-slate-900 border-2 border-dashed border-emerald-200 dark:border-emerald-800/30 rounded-[5px] flex flex-col items-center justify-center h-[280px] shadow-sm">
+                                        {currentUser?.signature ? (
+                                            <img src={currentUser.signature} alt="Saved Signature" className="max-h-[200px] max-w-[500px] object-contain opacity-90" />
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-3 text-slate-400">
+                                                <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center">
+                                                    <Info className="h-6 w-6 text-slate-400" />
+                                                </div>
+                                                <p className="text-xs font-medium">No saved signature found.</p>
+                                                <p className="text-[10px]">Go to Settings &gt; Signature to set your default signature.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             )}
                             <p className="text-center text-[10px] text-slate-400 font-bold capitalize tracking-wide mt-4">
-                                {sigType === 'draw' ? 'Signature Area' : 'Click inside the box to type your signature'}
+                                {sigType === 'draw' ? 'Signature Area' : sigType === 'type' ? 'Click inside the box to type your signature' : 'Your Default Signature from Settings'}
                             </p>
                         </div>
 

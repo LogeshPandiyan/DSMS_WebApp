@@ -39,11 +39,39 @@ const Header = ({ user, onLogout, onNotificationClick, unreadCount }) => {
             icon: Activity 
             };
 
-        if (path === '/settings') 
+        if (path === '/settings') {
+            const queryParams = new URLSearchParams(location.search);
+            const tab = queryParams.get('tab') || 'profile';
+            let tabName = '';
+            let subtitle = '';
+            
+            if (tab === 'portal-user') {
+                    tabName = ' / Portal user';
+                    subtitle = 'Manage platform users and their access levels.';
+                } 
+                else if (tab === 'profile') {
+                    tabName = ' / Profile';
+                    subtitle = 'Manage your personal information and preferences.';
+                } 
+                else if (tab === 'signature') {
+                    tabName = ' / Signature';
+                    subtitle = 'Update your digital signature.';
+                } 
+                else if (tab === 'notifications') {
+                    tabName = ' / Notifications';
+                    subtitle = 'Manage your notification preferences.';
+                } 
+                else if (tab === 'security') {
+                    tabName = ' / Security';
+                    subtitle = 'Manage your account security and password.';
+                }
+
             return { 
-            title: 'Account settings', 
-            icon: Settings 
+                title: `Account settings${tabName}`, 
+                subtitle,
+                icon: Settings 
             };
+        }
 
         if (path.startsWith('/prepare')) 
             return { 
@@ -63,7 +91,7 @@ const Header = ({ user, onLogout, onNotificationClick, unreadCount }) => {
         };
     };
 
-    const { title, icon: Icon } = getPageTitle();
+    const { title, subtitle, icon: Icon } = getPageTitle();
 
     return (
         <header className="h-20 border-b border-slate-200 dark:border-white/5 bg-white
@@ -71,8 +99,9 @@ const Header = ({ user, onLogout, onNotificationClick, unreadCount }) => {
          z-50 transition-colors duration-300">
 
             <div className="flex-1 flex items-center gap-3">
-                <div>
+                <div className="flex flex-col">
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">{title}</h1>
+                    {subtitle && <p className="text-xs text-slate-500 font-medium mt-1.5">{subtitle}</p>}
                 </div>
             </div>
 

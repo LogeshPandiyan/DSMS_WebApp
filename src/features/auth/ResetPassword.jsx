@@ -17,15 +17,16 @@ const ResetPassword = () => {
         if (password !== confirmPassword) {
             return toast.error('Passwords do not match');
         }
-        
         setLoading(true);
         try {
             const response = await API.post(`/auth/reset-password/${token}`, { password });
             toast.success(response.data.message);
             setTimeout(() => navigate('/login'), 2000);
-        } catch (error) {
+        } 
+        catch (error) {
             toast.error(error.response?.data?.message || 'Failed to reset password');
-        } finally {
+        } 
+        finally {
             setLoading(false);
         }
     };

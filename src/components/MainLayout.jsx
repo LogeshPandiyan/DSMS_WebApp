@@ -13,7 +13,7 @@ import { SocketProvider, useSocket } from '../context/SocketContext';
 import NotificationSidebar from './NotificationSidebar'; // Added
 
 const MainLayoutContent = ({ user, setUser, onLogoutClick, isSidebarCollapsed, setIsSidebarCollapsed }) => {
-    const { notifications, unreadCount, markAllAsRead } = useSocket();
+    const { notifications, unreadCount, markAllAsRead, clearAll } = useSocket();
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
 
     return (
@@ -33,6 +33,7 @@ const MainLayoutContent = ({ user, setUser, onLogoutClick, isSidebarCollapsed, s
                 onClose={() => setIsNotificationSidebarOpen(false)}
                 notifications={notifications}
                 onMarkAllAsRead={markAllAsRead}
+                onClearAll={clearAll}
             />
 
             {/* Main Content Area */}

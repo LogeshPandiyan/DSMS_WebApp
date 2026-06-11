@@ -19,3 +19,33 @@ export const getDashboardStats = async () => {
         throw error;
     }
 };
+
+export const getNotifications = async () => {
+    try {
+        const response = await API.get('/notifications');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        throw error;
+    }
+};
+
+export const markNotificationsAsRead = async () => {
+    try {
+        const response = await API.put('/notifications/read-all');
+        return response.data;
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        throw error;
+    }
+};
+
+export const clearAllNotifications = async () => {
+    try {
+        const response = await API.delete('/notifications/clear-all');
+        return response.data;
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        throw error;
+    }
+};

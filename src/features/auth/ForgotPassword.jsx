@@ -20,9 +20,11 @@ const ForgotPassword = () => {
             // In a real app, the user would check their email. 
             // For this demo, we could log the token or just show success.
             console.log("Reset Token:", response.data.resetToken);
-        } catch (error) {
+        } 
+        catch (error) {
             toast.error(error.response?.data?.message || 'Failed to send reset email');
-        } finally {
+        } 
+        finally {
             setLoading(false);
         }
     };

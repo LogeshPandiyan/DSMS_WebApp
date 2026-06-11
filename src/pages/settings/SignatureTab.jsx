@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { PenTool, Trash2, Save, Loader2, Upload } from 'lucide-react';
 
-const SignatureTab = ({ sigType, setSigType, sigPad, userData, clearSignature, saveSignature, loading }) => {
+const SignatureTab = ({ sigType, setSigType, sigPad, userData, clearSignature, saveSignature, loading, uploadedSignature, handleSignatureUpload }) => {
+    const fileInputRef = useRef(null);
+    
     return (
         <div className="space-y-10 max-w-3xl animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="space-y-1">
@@ -35,11 +37,12 @@ const SignatureTab = ({ sigType, setSigType, sigPad, userData, clearSignature, s
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-6 shadow-sm">
                     {sigType === 'draw' ? (
                         <div className="space-y-4">
-                            <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[5px] overflow-hidden bg-slate-50/50">
+                            <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[5px] overflow-hidden bg-slate-50/50 flex justify-center touch-none">
                                 <SignatureCanvas
                                     ref={sigPad}
                                     penColor="#000"
-                                    canvasProps={{ className: 'w-full h-48 signature-canvas' }}
+                                    clearOnResize={false}
+                                    canvasProps={{ width: 600, height: 200, className: 'signature-canvas max-w-full' }}
                                 />
                             </div>
                             <div className="flex justify-between items-center">
@@ -58,11 +61,52 @@ const SignatureTab = ({ sigType, setSigType, sigPad, userData, clearSignature, s
                             </div>
                         </div>
                     ) : (
-                        <div className="h-48 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[5px] flex flex-col items-center justify-center gap-3 bg-slate-50/50 group cursor-pointer hover:bg-slate-100 transition-colors">
-                            <div className="h-10 w-10 rounded-full bg-primary-600/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Upload className="h-5 w-5 text-primary-600" />
+                        <div className="space-y-4">
+                            <div 
+                                className={`h-48 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[5px] flex flex-col items-center justify-center gap-3 bg-slate-50/50 group cursor-pointer transition-colors ${!uploadedSignature ? 'hover:bg-slate-100' : ''}`}
+                                onClick={() => !uploadedSignature && fileInputRef.current?.click()}
+                            >
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    ref={fileInputRef} 
+                                    onChange={handleSignatureUpload} 
+                                />
+                                {uploadedSignature ? (
+                                    <div className="h-full w-full p-2 relative flex items-center justify-center group-hover:opacity-90">
+                                        <img src={uploadedSignature} alt="Uploaded signature" className="max-h-full max-w-full object-contain" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="h-10 w-10 rounded-full bg-primary-600/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <Upload className="h-5 w-5 text-primary-600" />
+                                        </div>
+                                        <p className="text-[11px] font-medium text-slate-500">Click to browse or <span className="text-primary-600">upload signature</span></p>
+                                    </>
+                                )}
                             </div>
-                            <p className="text-[11px] font-medium text-slate-500">Drag & drop or <span className="text-primary-600">browse</span></p>
+                            
+                            {/* Actions for Upload Mode */}
+                            <div className="flex justify-between items-center h-10">
+                                {uploadedSignature && (
+                                    <button onClick={clearSignature} className="text-slate-400 hover:text-red-500 flex items-center gap-2 text-[11px] font-medium tracking-wide transition-colors">
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                        Clear image
+                                    </button>
+                                )}
+                                
+                                <div className="ml-auto">
+                                    <button 
+                                        onClick={saveSignature}
+                                        disabled={loading || !uploadedSignature}
+                                        className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-[5px] text-[11px] font-medium tracking-wide flex items-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                                    >
+                                        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                        Save uploaded signature
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

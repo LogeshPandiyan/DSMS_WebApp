@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bell, Loader2, Save } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
-const NotificationsTab = ({ notifications, setNotifications, updateNotifications, loading }) => {
+const NotificationsTab = ({ notifications, onToggle }) => {
     return (
         <div className="space-y-10 max-w-3xl animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="space-y-1">
@@ -27,7 +27,7 @@ const NotificationsTab = ({ notifications, setNotifications, updateNotifications
                             <p className="text-xs text-slate-500">{item.desc}</p>
                         </div>
                         <button
-                            onClick={() => setNotifications(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                            onClick={() => onToggle(item.id, !notifications[item.id])}
                             className={`relative w-14 h-7 rounded-full transition-all duration-300 ${notifications[item.id] ? 'bg-primary-600' : 'bg-slate-200 dark:bg-slate-800'}`}
                         >
                             <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 ${notifications[item.id] ? 'left-8' : 'left-1'}`}></div>
@@ -35,15 +35,6 @@ const NotificationsTab = ({ notifications, setNotifications, updateNotifications
                     </div>
                 ))}
             </div>
-
-            <button
-                onClick={updateNotifications}
-                disabled={loading}
-                className="bg-primary-600 hover:bg-primary-500 text-white px-10 py-4 rounded-[5px] text-[12px] font-medium tracking-wide flex items-center gap-2 shadow-lg shadow-primary-600/30 transition-all active:scale-[0.98] disabled:opacity-50"
-            >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Save preferences
-            </button>
         </div>
     );
 };

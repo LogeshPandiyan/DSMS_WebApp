@@ -13,7 +13,8 @@ import {
     Loader2,
     ChevronLeft,
     ChevronRight,
-    ChevronDown
+    ChevronDown,
+    Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getAllUsers, updateUserRole, deleteUser, toggleUserStatus } from '../../services/adminService';
@@ -34,6 +35,8 @@ const PortalUserTab = ({ currentUser }) => {
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [rowsPerPageOpen, setRowsPerPageOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState('all');
+    const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+    const [isStatsPopoverOpen, setIsStatsPopoverOpen] = useState(false);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -59,12 +62,14 @@ const PortalUserTab = ({ currentUser }) => {
         const handleClickOutside = () => {
             setOpenDropdownId(null);
             setRowsPerPageOpen(false);
+            setIsFilterDropdownOpen(false);
+            setIsStatsPopoverOpen(false);
         };
-        if (openDropdownId || rowsPerPageOpen) {
+        if (openDropdownId || rowsPerPageOpen || isFilterDropdownOpen || isStatsPopoverOpen) {
             document.addEventListener('click', handleClickOutside);
         }
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [openDropdownId, rowsPerPageOpen]);
+    }, [openDropdownId, rowsPerPageOpen, isFilterDropdownOpen, isStatsPopoverOpen]);
 
     const handleDeleteConfirm = async () => {
         if (!deleteModal.userId) return;
@@ -151,24 +156,106 @@ const PortalUserTab = ({ currentUser }) => {
     const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
+    const statusOptions = [
+        { label: 'All', value: 'all' },
+        { label: 'Active', value: 'active' },
+        { label: 'In-Active', value: 'inactive' }
+    ];
+    const activeFilterOption = statusOptions.find(opt => opt.value === statusFilter) || statusOptions[0];
+
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-[10px]">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-slate-800 rounded-[5px]">
-                <p className="text-sm text-slate-500 font-medium">Manage platform users and their access levels.</p>
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative">
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="h-[42px] pl-3 pr-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] text-sm font-medium focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all appearance-none cursor-pointer text-slate-700 dark:text-slate-300"
+                
+                {/* Left Side: Filter Dropdown & Stats Info */}
+                <div className="flex items-center gap-3">
+                    <div className="relative w-fit">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsFilterDropdownOpen(!isFilterDropdownOpen);
+                            }}
+                            className={`px-4 min-w-[130px] h-[42px] text-[13px] font-bold transition-all rounded-[5px] flex items-center gap-3 whitespace-nowrap border justify-between shadow-sm bg-white dark:bg-slate-900/50 backdrop-blur-md
+                                ${isFilterDropdownOpen 
+                                    ? 'border-primary-500 ring-1 ring-primary-500/10 text-slate-900 dark:text-white' 
+                                    : 'text-slate-600 dark:text-slate-350 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 hover:text-slate-900 dark:hover:text-white'}`}
                         >
-                            <option value="all">All</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">In-Active</option>
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                            <div className="flex items-center gap-2">
+                                <span>{activeFilterOption.label}</span>
+                            </div>
+                            <ChevronDown className={`h-3.5 w-3.5 text-slate-450 transition-transform duration-200 ${isFilterDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {/* Filter Dropdown Menu */}
+                        {isFilterDropdownOpen && (
+                            <div className="absolute left-0 mt-2 w-full min-w-[130px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[1000] p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="relative z-10 space-y-1">
+                                    {statusOptions.map((opt) => {
+                                        const isActive = opt.value === statusFilter;
+                                        return (
+                                            <button
+                                                key={opt.value}
+                                                onClick={() => {
+                                                    setStatusFilter(opt.value);
+                                                    setIsFilterDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3 py-2 text-xs font-bold rounded-[4px] transition-all
+                                                    ${isActive 
+                                                        ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20' 
+                                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
+
+                    <div className="relative w-fit">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsStatsPopoverOpen(!isStatsPopoverOpen);
+                            }}
+                            className={`h-8 w-8 flex items-center justify-center rounded-full transition-all border
+                                ${isStatsPopoverOpen 
+                                    ? 'bg-primary-50 border-primary-200 text-primary-600 dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-400' 
+                                    : 'bg-white border-slate-200 text-slate-400 hover:text-primary-600 hover:border-primary-200 hover:bg-primary-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-primary-900/20'}`}
+                        >
+                            <Info className="h-4 w-4" />
+                        </button>
+
+                        {/* Stats Dropdown Menu */}
+                        {isStatsPopoverOpen && (
+                            <div className="absolute left-0 mt-2 w-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[1000] p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-2">
+                                    {[
+                                        { label: 'Administrators', value: users.filter(u => u.role === 'admin').length, icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-500/10' },
+                                        { label: 'Managers', value: users.filter(u => u.role === 'manager').length, icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-500/10' },
+                                        { label: 'Employees', value: users.filter(u => u.role === 'employee').length, icon: UserCircle, color: 'text-blue-600', bg: 'bg-blue-500/10' },
+                                        { label: 'Total users', value: users.length, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-500/10' }
+                                    ].map((stat, i) => (
+                                        <div key={i} className="flex items-center justify-between p-2 rounded-[5px] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`h-8 w-8 rounded-[5px] flex items-center justify-center ${stat.bg}`}>
+                                                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                                                </div>
+                                                <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">{stat.label}</span>
+                                            </div>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">{stat.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Side: Search & Add User */}
+                <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative group flex-1 md:flex-none">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
                         <input 
@@ -189,30 +276,6 @@ const PortalUserTab = ({ currentUser }) => {
                         </button>
                     )}
                 </div>
-            </div>
-
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-[10px]">
-                {[
-                    { label: 'Administrators', value: users.filter(u => u.role === 'admin').length, icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-500/10' },
-                    { label: 'Managers', value: users.filter(u => u.role === 'manager').length, icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-500/10' },
-                    { label: 'Employees', value: users.filter(u => u.role === 'employee').length, icon: UserCircle, color: 'text-blue-600', bg: 'bg-blue-500/10' },
-                    { label: 'Total users', value: users.length, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-500/10' }
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[5px] shadow-sm flex items-center justify-between transition-all hover:shadow-md">
-                        <div>
-                            <p className="text-[11px] font-medium text-slate-500 tracking-widest">
-                            {stat.label}
-                            </p>
-                            <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-1">
-                            {stat.value}
-                            </p>
-                        </div>
-                        <div className={`h-12 w-12 rounded-full ${stat.bg} ${stat.color} flex items-center justify-center`}>
-                            <stat.icon className="h-6 w-6" />
-                        </div>
-                    </div>
-                ))}
             </div>
 
             <div className="relative">

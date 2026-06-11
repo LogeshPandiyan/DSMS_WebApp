@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Users, PenTool, Bell, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
 import { getMe, updateProfile, updateSignature, updateNotifications, updatePassword } from '../../services/authService';
 
 // Import Modular Tab Components
@@ -13,7 +13,12 @@ import SecurityTab from './SecurityTab';
 
 const Settings = () => {
     const { user: currentUser, setUser: setGlobalUser } = useOutletContext();
-    const [activeTab, setActiveTab] = useState('profile');
+    const routeLocation = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(routeLocation.search);
+    const urlTab = queryParams.get('tab');
+
+    const [activeTab, setActiveTabState] = useState(urlTab || 'profile');
     const [fetching, setFetching] = useState(true);
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState(null);
@@ -29,6 +34,7 @@ const Settings = () => {
 
     // Signature State
     const [sigType, setSigType] = useState('draw');
+    const [uploadedSignature, setUploadedSignature] = useState(null);
     const sigPad = useRef(null);
 
     // Notification State
@@ -60,14 +66,30 @@ const Settings = () => {
                 setBio(user.bio || '');
                 setLocation(user.location || '');
                 setNotifications(user.notificationSettings || notifications);
-            } catch {
+            } 
+            catch {
                 toast.error('Failed to load settings');
-            } finally {
+            } 
+            finally {
                 setFetching(false);
             }
         };
         fetchUserData();
     }, []);
+
+    useEffect(() => {
+        if (urlTab) {
+            setActiveTabState(urlTab);
+        } 
+        else {
+            navigate('?tab=profile', { replace: true });
+        }
+    }, [urlTab, navigate]);
+
+    const setActiveTab = (tabId) => {
+        setActiveTabState(tabId);
+        navigate(`?tab=${tabId}`);
+    };
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
@@ -85,44 +107,91 @@ const Settings = () => {
             setUserData(response.data);
             setGlobalUser(response.data);
             toast.success('Profile updated successfully');
-        } catch (error) {
+        } 
+        catch (error) {
             toast.error(error.response?.data?.message || 'Update failed');
-        } finally {
+        } 
+        finally {
             setLoading(false);
         }
     };
 
-    const clearSignature = () => sigPad.current?.clear();
+    const clearSignature = () => {
+        if (sigType === 'draw') {
+            sigPad.current?.clear();
+        }
+        else {
+            setUploadedSignature(null);
+        }
+    };
+
+    const handleSignatureUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUploadedSignature(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const saveSignature = async () => {
-        if (sigPad.current.isEmpty()) {
-            return toast.error('Please provide a signature first');
+        let signatureData = null;
+
+        if (sigType === 'draw') {
+            if (!sigPad.current) {
+                return toast.error('Signature pad not initialized');
+            }
+            
+            try {
+                // getCanvas gets the raw HTML canvas element directly, avoiding buggy trimming logic
+                const canvas = sigPad.current.getCanvas();
+                signatureData = canvas.toDataURL('image/png');
+                
+                // Optional: Check if it's literally an empty canvas string, but we trust the user clicked save after drawing
+            } catch (err) {
+                console.error("Signature extraction error", err);
+                return toast.error('Failed to process signature image');
+            }
+        } 
+        else if (sigType === 'upload') {
+            if (!uploadedSignature) {
+                return toast.error('Please upload a signature image first');
+            }
+            signatureData = uploadedSignature;
         }
+
         setLoading(true);
         try {
-            const signatureData = sigPad.current.getTrimmedCanvas().toDataURL('image/png');
             const response = await updateSignature(signatureData);
             setUserData(response.data);
             setGlobalUser(response.data);
             toast.success('Signature saved successfully');
-        } catch {
+            setUploadedSignature(null);
+        } 
+        catch {
             toast.error('Failed to save signature');
-        } finally {
+        } 
+        finally {
             setLoading(false);
         }
     };
 
-    const handleNotificationUpdate = async () => {
-        setLoading(true);
+    const handleNotificationToggle = async (key, value) => {
+        // Optimistic UI update
+        const newNotifications = { ...notifications, [key]: value };
+        setNotifications(newNotifications);
+        
         try {
-            const response = await updateNotifications(notifications);
+            const response = await updateNotifications(newNotifications);
             setUserData(response.data);
             setGlobalUser(response.data);
             toast.success('Notification preferences updated');
         } catch {
+            // Revert on failure
+            setNotifications(notifications);
             toast.error('Failed to update notifications');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -239,15 +308,15 @@ const Settings = () => {
                             clearSignature={clearSignature}
                             saveSignature={saveSignature}
                             loading={loading}
+                            uploadedSignature={uploadedSignature}
+                            handleSignatureUpload={handleSignatureUpload}
                         />
                     )}
 
                     {activeTab === 'notifications' && (
                         <NotificationsTab 
                             notifications={notifications}
-                            setNotifications={setNotifications}
-                            updateNotifications={handleNotificationUpdate}
-                            loading={loading}
+                            onToggle={handleNotificationToggle}
                         />
                     )}
 
