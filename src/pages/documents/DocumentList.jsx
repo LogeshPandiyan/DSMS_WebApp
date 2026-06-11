@@ -159,6 +159,8 @@ const DocumentList = () => {
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsFilterDropdownOpen(!isFilterDropdownOpen);
+                            setOpenDropdownId(null);
+                            setRowsPerPageOpen(false);
                         }}
                         className={`px-4 min-w-[130px] h-10 text-[13px] font-bold transition-all rounded-[5px] flex items-center gap-3 whitespace-nowrap border justify-between shadow-sm bg-white dark:bg-slate-900/50 backdrop-blur-md
                             ${isFilterDropdownOpen 
@@ -277,7 +279,12 @@ const DocumentList = () => {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setOpenDropdownId(openDropdownId === doc._id ? null : doc._id);
+                                                        const nextId = openDropdownId === doc._id ? null : doc._id;
+                                                        setOpenDropdownId(nextId);
+                                                        if (nextId) {
+                                                            setIsFilterDropdownOpen(false);
+                                                            setRowsPerPageOpen(false);
+                                                        }
                                                     }}
                                                     className={`h-9 w-9 rounded-[5px] flex items-center justify-center transition-all
                                                         ${openDropdownId === doc._id
@@ -440,7 +447,12 @@ const DocumentList = () => {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setRowsPerPageOpen(!rowsPerPageOpen);
+                                        const nextOpen = !rowsPerPageOpen;
+                                        setRowsPerPageOpen(nextOpen);
+                                        if (nextOpen) {
+                                            setOpenDropdownId(null);
+                                            setIsFilterDropdownOpen(false);
+                                        }
                                     }}
                                     className={`flex items-center gap-3 bg-white dark:bg-slate-900 border text-xs font-bold text-slate-700 dark:text-slate-300 rounded-[5px] pl-3 pr-2 py-1.5 transition-all min-w-[64px] justify-between
                                         ${rowsPerPageOpen ? 'border-primary-500 ring-1 ring-primary-500/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
@@ -471,6 +483,11 @@ const DocumentList = () => {
                                 )}
                             </div>
                         </div>
+                        <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">
+                            {pagination.totalDocuments > 0 
+                                ? `${(pagination.currentPage - 1) * limit + 1}–${Math.min(pagination.currentPage * limit, pagination.totalDocuments)} of ${pagination.totalDocuments}` 
+                                : '0–0 of 0'}
+                        </span>
                         <div className="flex items-center gap-1.5">
                             <button
                                 disabled={pagination?.currentPage <= 1}

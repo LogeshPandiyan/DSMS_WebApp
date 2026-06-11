@@ -12,7 +12,8 @@ import {
     ChevronRight,
     ShieldCheck,
     Info,
-    Keyboard
+    Keyboard,
+    X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -85,8 +86,7 @@ const SignDocument = () => {
             if (!typedName.trim()) {
                 return toast.error('Please type your name');
             }
-            // Generate image from text using canvas
-            const canvas = document.createElement('canvas');
+            const canvas = window.document.createElement('canvas');
             canvas.width = 600;
             canvas.height = 200;
             const ctx = canvas.getContext('2d');
@@ -414,7 +414,7 @@ const SignDocument = () => {
                                     </button>
                                     <button 
                                         onClick={() => setSigType('saved')}
-                                        className={`px-3 py-1 text-[10px] font-black capitalize tracking-wide rounded-[4px] transition-all flex items-center gap-2 ${sigType === 'saved' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                        className={`px-3 py-1 text-[10px] font-black capitalize tracking-wide rounded-[4px] transition-all flex items-center gap-2 ${sigType === 'saved' ? 'bg-white dark:bg-slate-900 text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
                                         <ShieldCheck className="h-3 w-3" />
                                         Saved
@@ -422,7 +422,7 @@ const SignDocument = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                {[
+                                {sigType !== 'saved' && [
                                     { color: '#000000', label: 'Black' },
                                     { color: '#0033cc', label: 'Blue' },
                                     { color: '#cc0000', label: 'Red' }
@@ -435,8 +435,11 @@ const SignDocument = () => {
                                         title={c.label}
                                     />
                                 ))}
-                                <button onClick={() => setIsModalOpen(false)} className="ml-4 text-slate-400 hover:text-slate-600">
-                                    <ChevronLeft className="h-6 w-6 rotate-90" />
+                                <button 
+                                    onClick={() => setIsModalOpen(false)} 
+                                    className="ml-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-[5px] transition-all"
+                                >
+                                    <X className="h-5 w-5" />
                                 </button>
                             </div>
                         </div>

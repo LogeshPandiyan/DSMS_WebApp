@@ -258,10 +258,10 @@ const UploadDocument = () => {
     };
 
     return (
-        <div className="w-full animate-in fade-in duration-500 py-4 px-2">
+        <div className="w-full max-w-[1600px] mx-auto animate-in fade-in duration-500 py-4 px-2">
             <div className="flex flex-col lg:flex-row gap-6 items-stretch">
                 {/* Right Side (Center/Left): The Form */}
-                <div className="w-full lg:w-[870px]">
+                <div className="w-full lg:flex-1">
                     <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-6 shadow-sm space-y-5 relative h-full">
                         
                         <div className="space-y-5 relative z-20">
@@ -498,7 +498,7 @@ const UploadDocument = () => {
                                         onChange={handleFileChange}
                                     />
                                     <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                                        <div className={`h-12 w-12 rounded-[5px] flex items-center justify-center transition-all duration-300 ${file ? 'bg-primary-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-primary-500 group-hover:text-white group-hover:shadow-md'}`}>
+                                        <div className={`h-12 w-12 rounded-[5px] flex items-center justify-center transition-all duration-300 ${file ? 'bg-primary-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-900 text-slate-400 group-hover:!bg-primary-600 group-hover:text-white group-hover:shadow-md'}`}>
                                             {file ? <CheckCircle2 className="h-6 w-6" /> : <Upload className="h-6 w-6" />}
                                         </div>
                                         <div className="space-y-0.5">
@@ -509,7 +509,7 @@ const UploadDocument = () => {
                                                 {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB • PDF Document` : 'Max size: 10MB'}
                                             </p>
                                         </div>
-                                        {!file && <div className="mt-1 px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] text-[10px] font-black capitalize tracking-wide text-slate-600 dark:text-slate-300 shadow-sm transition-all group-hover:border-primary-500/30 group-hover:text-primary-600">Choose File</div>}
+                                        {!file && <div className="mt-1 px-4 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[5px] text-[10px] font-black capitalize tracking-wide text-slate-600 dark:text-slate-300 shadow-sm transition-all group-hover:border-primary-500/30 group-hover:text-primary-600">Choose File</div>}
                                     </label>
                                 </div>
                             </div>
@@ -539,7 +539,7 @@ const UploadDocument = () => {
                 </div>
 
                 {/* Left Side (Right Side): Info & Context */}
-                <div className="w-full lg:w-[330px]">
+                <div className="w-full lg:w-[330px] lg:shrink-0">
                     <div className="border border-slate-200 dark:border-slate-800 rounded-[5px] p-5 space-y-5 bg-white dark:bg-slate-900 h-full">
 
                         <div className="space-y-2">

@@ -45,14 +45,14 @@ const PortalUserTab = ({ currentUser }) => {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getAllUsers(statusFilter);
+            const response = await getAllUsers('all');
             setUsers(response.data);
         } catch {
             toast.error('Failed to fetch users');
         } finally {
             setLoading(false);
         }
-    }, [statusFilter]);
+    }, []);
 
     useEffect(() => {
         fetchUsers();
@@ -145,21 +145,32 @@ const PortalUserTab = ({ currentUser }) => {
         }
     };
 
-    const filteredUsers = users.filter(user => 
-        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredUsers = users.filter(user => {
+        // Status filter
+        if (statusFilter === 'active' && user.isActive === false) return false;
+        if (statusFilter === 'inactive' && user.isActive !== false) return false;
+
+        // Search term filter
+        return (
+            user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
+    const totalCount = users.length;
+    const activeCount = users.filter(u => u.isActive !== false).length;
+    const inactiveCount = users.filter(u => u.isActive === false).length;
+
     const statusOptions = [
-        { label: 'All', value: 'all' },
-        { label: 'Active', value: 'active' },
-        { label: 'In-Active', value: 'inactive' }
+        { label: 'All', value: 'all', icon: Users, count: totalCount },
+        { label: 'Active', value: 'active', icon: CheckCircle2, count: activeCount },
+        { label: 'Inactive', value: 'inactive', icon: ShieldAlert, count: inactiveCount }
     ];
     const activeFilterOption = statusOptions.find(opt => opt.value === statusFilter) || statusOptions[0];
 
@@ -175,6 +186,8 @@ const PortalUserTab = ({ currentUser }) => {
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setIsFilterDropdownOpen(!isFilterDropdownOpen);
+                                setOpenDropdownId(null);
+                                setRowsPerPageOpen(false);
                             }}
                             className={`px-4 min-w-[130px] h-[42px] text-[13px] font-bold transition-all rounded-[5px] flex items-center gap-3 whitespace-nowrap border justify-between shadow-sm bg-white dark:bg-slate-900/50 backdrop-blur-md
                                 ${isFilterDropdownOpen 
@@ -182,14 +195,21 @@ const PortalUserTab = ({ currentUser }) => {
                                     : 'text-slate-600 dark:text-slate-350 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             <div className="flex items-center gap-2">
+                                <activeFilterOption.icon className="h-4 w-4 text-primary-500" />
                                 <span>{activeFilterOption.label}</span>
+                                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 ml-1">
+                                    {activeFilterOption.count}
+                                </span>
                             </div>
                             <ChevronDown className={`h-3.5 w-3.5 text-slate-450 transition-transform duration-200 ${isFilterDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {/* Filter Dropdown Menu */}
                         {isFilterDropdownOpen && (
-                            <div className="absolute left-0 mt-2 w-full min-w-[130px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[1000] p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="absolute left-0 mt-2 w-full min-w-[180px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[1000] p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                                {/* Decorative pointer arrow on the top */}
+                                <div className="absolute left-6 -top-1.5 w-2.5 h-2.5 rotate-45 bg-white dark:bg-slate-900 border-t border-l border-slate-200 dark:border-white/5 z-0"></div>
+                                
                                 <div className="relative z-10 space-y-1">
                                     {statusOptions.map((opt) => {
                                         const isActive = opt.value === statusFilter;
@@ -200,12 +220,18 @@ const PortalUserTab = ({ currentUser }) => {
                                                     setStatusFilter(opt.value);
                                                     setIsFilterDropdownOpen(false);
                                                 }}
-                                                className={`w-full text-left px-3 py-2 text-xs font-bold rounded-[4px] transition-all
+                                                className={`w-full flex items-center justify-between px-3 py-2 text-xs font-bold rounded-[4px] transition-all
                                                     ${isActive 
                                                         ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20' 
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
                                             >
-                                                {opt.label}
+                                                <div className="flex items-center gap-2">
+                                                    <opt.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-slate-450 group-hover:text-primary-500'}`} />
+                                                    <span>{opt.label}</span>
+                                                </div>
+                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-primary-700 text-primary-200' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                                    {opt.count}
+                                                </span>
                                             </button>
                                         );
                                     })}
@@ -279,7 +305,7 @@ const PortalUserTab = ({ currentUser }) => {
             </div>
 
             <div className="relative">
-                <div className="w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full" style={{ scrollbarWidth: 'thin' }}>
+                <div className="w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500">
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/50">
@@ -323,7 +349,12 @@ const PortalUserTab = ({ currentUser }) => {
                                                 <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setOpenDropdownId(openDropdownId === user._id ? null : user._id);
+                                                        const nextId = openDropdownId === user._id ? null : user._id;
+                                                        setOpenDropdownId(nextId);
+                                                        if (nextId) {
+                                                            setIsFilterDropdownOpen(false);
+                                                            setRowsPerPageOpen(false);
+                                                        }
                                                     }}
                                                     className={`h-9 w-9 rounded-[5px] flex items-center justify-center transition-all
                                                         ${openDropdownId === user._id 
@@ -334,7 +365,7 @@ const PortalUserTab = ({ currentUser }) => {
                                                 </button>
 
                                                 {openDropdownId === user._id && (
-                                                    <div className={`absolute ${index > 0 && index >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} -left-2 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-150`}>
+                                                    <div className={`absolute ${index > 0 && index >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} -left-2 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150`}>
                                                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                                                             <p className="text-[10px] font-medium text-slate-400 tracking-widest">Modify access</p>
                                                         </div>
@@ -342,7 +373,7 @@ const PortalUserTab = ({ currentUser }) => {
                                                             <button
                                                                 key={role}
                                                                 onClick={() => handleRoleChange(user, role)}
-                                                                className={`w-full text-left px-3 py-2 text-xs font-medium capitalize transition-colors flex items-center justify-between
+                                                                className={`w-full text-left px-3 py-2 text-xs font-medium capitalize rounded-[4px] transition-colors flex items-center justify-between
                                                                     ${user.role === role 
                                                                         ? 'text-primary-600 bg-primary-50/50 dark:bg-primary-900/10' 
                                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
@@ -355,7 +386,7 @@ const PortalUserTab = ({ currentUser }) => {
                                                             <div className="mt-1 pt-1 border-t border-slate-100 dark:border-white/5">
                                                                 <button
                                                                     onClick={() => setDeleteModal({ isOpen: true, userId: user._id })}
-                                                                    className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2"
+                                                                    className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 rounded-[4px] hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2"
                                                                 >
                                                                     <Trash2 className="h-3.5 w-3.5" />
                                                                     Delete account
@@ -454,7 +485,12 @@ const PortalUserTab = ({ currentUser }) => {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setRowsPerPageOpen(!rowsPerPageOpen);
+                                        const nextOpen = !rowsPerPageOpen;
+                                        setRowsPerPageOpen(nextOpen);
+                                        if (nextOpen) {
+                                            setOpenDropdownId(null);
+                                            setIsFilterDropdownOpen(false);
+                                        }
                                     }}
                                     className={`flex items-center gap-3 bg-white dark:bg-slate-900 border text-xs font-bold text-slate-700 dark:text-slate-300 rounded-[5px] pl-3 pr-2 py-1.5 transition-all min-w-[64px] justify-between
                                         ${rowsPerPageOpen ? 'border-primary-500 ring-1 ring-primary-500/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
@@ -485,6 +521,9 @@ const PortalUserTab = ({ currentUser }) => {
                                 )}
                             </div>
                         </div>
+                        <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">
+                            {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length}
+                        </span>
                         <div className="flex items-center gap-1.5">
                             <button
                                 disabled={currentPage <= 1}

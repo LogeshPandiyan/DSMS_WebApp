@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Loader2, Copy, CheckCircle2, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import API from '../../api/axiosConfig';
@@ -7,6 +7,23 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
     const [loading, setLoading] = useState(false);
     const [inviteLink, setInviteLink] = useState('');
     const [copied, setCopied] = useState(false);
+    const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+
+    const roleOptions = [
+        { label: 'Employee', value: 'employee' },
+        { label: 'Manager', value: 'manager' },
+        { label: 'Admin', value: 'admin' }
+    ];
+
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setIsRoleDropdownOpen(false);
+        };
+        if (isRoleDropdownOpen) {
+            document.addEventListener('click', handleClickOutside);
+        }
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [isRoleDropdownOpen]);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -58,12 +75,12 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
         <>
             {/* Backdrop */}
             <div 
-                className={`fixed inset-0 bg-slate-900/70 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 onClick={resetAndClose}
             ></div>
 
             {/* Offcanvas Panel */}
-            <div className={`fixed inset-y-0 right-0 w-full max-w-[650px] bg-white dark:bg-slate-900 shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed inset-y-0 right-0 w-full max-w-[650px] bg-white dark:bg-slate-900 shadow-2xl z-[70] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex items-center justify-between p-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-lg flex items-center justify-center">
@@ -123,7 +140,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                 <input 
                                     type="text" name="name" required value={formData.name} onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                                    placeholder="e.g. John Doe"
+                                    placeholder="Enter your full name"
                                 />
                             </div>
 
@@ -132,31 +149,54 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                 <input 
                                     type="email" name="email" required value={formData.email} onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                                    placeholder="e.g. john@example.com"
+                                    placeholder="Enter email address"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Access Role *</label>
+                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-350 capitalize tracking-wide">Select Role *</label>
                                     <div className="relative">
-                                        <select 
-                                            name="role" value={formData.role} onChange={handleChange}
-                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500 appearance-none pr-10"
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsRoleDropdownOpen(!isRoleDropdownOpen);
+                                            }}
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500 flex items-center justify-between transition-all"
                                         >
-                                            <option value="employee">Employee</option>
-                                            <option value="manager">Manager</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                                            <span className="capitalize">{formData.role}</span>
+                                            <ChevronDown className={`h-4 w-4 text-slate-450 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {isRoleDropdownOpen && (
+                                            <div className="absolute left-0 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-50 p-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                                                {roleOptions.map((opt) => (
+                                                    <button
+                                                        key={opt.value}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, role: opt.value });
+                                                            setIsRoleDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-md transition-colors capitalize
+                                                            ${formData.role === opt.value 
+                                                                ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20' 
+                                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Phone</label>
+                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-350 capitalize tracking-wide">Phone</label>
                                     <input 
                                         type="tel" name="phone" value={formData.phone} onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                                        placeholder="+1 234 567 890"
+                                        placeholder="Enter phone number"
                                     />
                                 </div>
                             </div>
@@ -166,7 +206,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                 <input 
                                     type="text" name="jobTitle" value={formData.jobTitle} onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                                    placeholder="e.g. Senior Developer"
+                                    placeholder="Enter designation"
                                 />
                             </div>
 
@@ -176,7 +216,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                     <input 
                                         type="text" name="department" value={formData.department} onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                                        placeholder="e.g. Engineering"
+                                        placeholder="Enter department"
                                     />
                                 </div>
                                 <div className="space-y-1">
@@ -184,7 +224,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                     <input 
                                         type="text" name="location" value={formData.location} onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                                        placeholder="e.g. New York, NY"
+                                        placeholder="Enter location"
                                     />
                                 </div>
                             </div>

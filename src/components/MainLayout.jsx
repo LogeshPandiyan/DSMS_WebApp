@@ -59,7 +59,14 @@ const MainLayout = () => {
     const [user, setUser] = useState(getUserLocal());
     const [loading, setLoading] = useState(true);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Added
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('sidebarCollapsed') === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
+    }, [isSidebarCollapsed]);
+
     const navigate = useNavigate();
 
     useEffect(() => {
