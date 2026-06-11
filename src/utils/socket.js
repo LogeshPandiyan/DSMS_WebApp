@@ -1,3 +1,4 @@
+const Notification = require('../models/notificationModel');
 let io;
 
 module.exports = {
@@ -31,9 +32,31 @@ module.exports = {
         }
         return io;
     },
-    sendNotification: (userId, data) => {
-        if (io) {
-            io.to(userId.toString()).emit('notification', data);
+    sendNotification: async (userId, data) => {
+        try {
+            // Save to database first
+            const notification = await Notification.create({
+                recipient: userId,
+                title: data.title,
+                message: data.message,
+                type: data.type || 'GENERAL',
+                read: false,
+                metadata: data.metadata || {}
+            });
+
+            // Emit via socket
+            if (io) {
+                // Attach the DB _id and createdAt to the emitted data
+                const emitData = {
+                    ...data,
+                    id: notification._id,
+                    read: false,
+                    time: notification.createdAt
+                };
+                io.to(userId.toString()).emit('notification', emitData);
+            }
+        } catch (error) {
+            console.error('Error saving/sending notification:', error);
         }
     }
 };
