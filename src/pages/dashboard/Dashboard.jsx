@@ -11,6 +11,8 @@ import {
     ArrowUpRight,
     TrendingUp,
     Zap,
+    ZapOff,
+    WifiOff,
     Activity,
     Plus,
     Layout,
@@ -21,6 +23,39 @@ import {
     Send
 } from 'lucide-react';
 import { getDashboardStats } from '../../services/dashboardService';
+import { toast } from 'sonner';
+
+const getGreenShadeClass = (index) => {
+    const shades = [
+        'bg-green-50 dark:bg-green-950/20 border-green-100 dark:border-green-900/10 text-green-700 dark:text-green-300',
+        'bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800/20 text-green-800 dark:text-green-200',
+        'bg-green-200 dark:bg-green-850/40 border-green-300 dark:border-green-700/30 text-green-900 dark:text-green-100',
+        'bg-green-300 dark:bg-green-800/50 border-green-400 dark:border-green-600/40 text-green-950 dark:text-green-50',
+        'bg-green-400 dark:bg-green-700/60 border-green-500 dark:border-green-500/50 text-white',
+        'bg-green-500 dark:bg-green-600/70 border-green-600 dark:border-green-400/60 text-white',
+        'bg-green-600 dark:bg-green-500/80 border-green-700 dark:border-green-300/70 text-white',
+        'bg-green-700 dark:bg-green-400 border-green-850 dark:border-green-250 text-white',
+        'bg-green-800 dark:bg-green-300 border-green-900 dark:border-green-200 text-white',
+        'bg-green-900 dark:bg-green-200 border-green-950 dark:border-green-100 text-white'
+    ];
+    return shades[index % 10];
+};
+
+const getAmberShadeClass = (index) => {
+    const shades = [
+        'bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/10 text-amber-700 dark:text-amber-300',
+        'bg-amber-100 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/20 text-amber-800 dark:text-amber-200',
+        'bg-amber-200 dark:bg-amber-850/40 border-amber-300 dark:border-amber-700/30 text-amber-900 dark:text-amber-100',
+        'bg-amber-300 dark:bg-amber-800/50 border-amber-400 dark:border-amber-600/40 text-amber-950 dark:text-amber-50',
+        'bg-amber-400 dark:bg-amber-700/60 border-amber-500 dark:border-amber-500/50 text-white',
+        'bg-amber-500 dark:bg-amber-600/70 border-amber-600 dark:border-amber-400/60 text-white',
+        'bg-amber-600 dark:bg-amber-500/80 border-amber-700 dark:border-amber-300/70 text-white',
+        'bg-amber-700 dark:bg-amber-400 border-amber-850 dark:border-amber-250 text-white',
+        'bg-amber-800 dark:bg-amber-300 border-amber-900 dark:border-amber-200 text-white',
+        'bg-amber-900 dark:bg-amber-200 border-amber-950 dark:border-amber-100 text-white'
+    ];
+    return shades[index % 10];
+};
 
 const Dashboard = () => {
     const { user } = useOutletContext();
@@ -28,9 +63,24 @@ const Dashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [greeting, setGreeting] = useState('Welcome');
+    const [isBackendOnline, setIsBackendOnline] = useState(true);
+    const [isBrowserOnline, setIsBrowserOnline] = useState(navigator.onLine);
 
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const currentDayIdx = new Date().getDay();
+
+    useEffect(() => {
+        const handleOnline = () => setIsBrowserOnline(true);
+        const handleOffline = () => setIsBrowserOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
 
     useEffect(() => {
         const now = new Date();
@@ -47,8 +97,10 @@ const Dashboard = () => {
             try {
                 const response = await getDashboardStats();
                 setStats(response.data);
+                setIsBackendOnline(true);
             } catch {
                 console.error('Failed to fetch stats');
+                setIsBackendOnline(false);
             } finally {
                 setLoading(false);
             }
@@ -105,14 +157,31 @@ const Dashboard = () => {
 
                 <div className="relative z-10 px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-10">
                     <div className="flex-1 space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#12b79f]/10 rounded-full">
-                            <Zap className="h-3 w-3" style={{ color: brandColor }} />
-                            <span
-                                className="text-[10px] font-black capitalize tracking-wide"
-                                style={{ color: brandColor }}>
-                                System Online
-                            </span>
-                        </div>
+                        {/* Dynamic System Connection Status Badge */}
+                        {!isBrowserOnline ? (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 text-red-500 rounded-full border border-red-500/20">
+                                <WifiOff className="h-3 w-3 text-red-500 animate-pulse" />
+                                <span className="text-[10px] font-black capitalize tracking-wide">
+                                    You're Offline
+                                </span>
+                            </div>
+                        ) : !isBackendOnline ? (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20">
+                                <ZapOff className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+                                <span className="text-[10px] font-black capitalize tracking-wide">
+                                    Server Offline
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#12b79f]/10 rounded-full border border-[#12b79f]/20">
+                                <Zap className="h-3 w-3 animate-pulse" style={{ color: brandColor }} />
+                                <span
+                                    className="text-[10px] font-black capitalize tracking-wide"
+                                    style={{ color: brandColor }}>
+                                    System Online
+                                </span>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -187,7 +256,7 @@ const Dashboard = () => {
                                 <p className="text-[11px] font-black capitalize text-slate-400">Weekly Performance Data (Sun - Sat)</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full border border-emerald-100 dark:border-emerald-500/10">
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-full border border-primary-100 dark:border-primary-500/10">
                             <TrendingUp className="h-3 w-3" />
                             <span className="text-[10px] font-black uppercase tracking-tight">Live Tracking</span>
                         </div>
@@ -213,13 +282,32 @@ const Dashboard = () => {
                                 return (
                                 <div key={day} className="flex-1 flex flex-col items-center gap-4 group/bar h-full justify-end relative">
                                     <div
-                                        className={`w-full rounded-t-[4px] transition-all duration-700 cursor-pointer relative group-hover/bar:opacity-80
-                                            ${isToday ? 'bg-[#12b79f] shadow-lg shadow-[#12b79f]/20' : 'bg-slate-100 dark:bg-slate-800'}`}
-                                                style={{
-                                                    height: `${barHeight}%`,
+                                        className={`w-full rounded-t-[4px] transition-all duration-700 cursor-pointer relative group-hover/bar:opacity-95 flex flex-col-reverse gap-[2px]
+                                            ${total > 0 ? 'bg-transparent' : (isToday ? 'bg-[#12b79f]/20' : 'bg-slate-100 dark:bg-slate-800')}`}
+                                        style={{
+                                            height: `${barHeight}%`,
                                             animation: `grow-up 1.2s ease-out forwards ${i * 80}ms`
-                                                }}
+                                        }}
                                     >
+                                        {total > 0 && (
+                                            <>
+                                                {/* Stack of Signed documents (Green) */}
+                                                {Array.from({ length: data.signed }).map((_, idx) => (
+                                                    <div 
+                                                        key={`signed-${idx}`}
+                                                        className={`flex-1 w-full rounded-[2px] border transition-all duration-300 ${getGreenShadeClass(idx)}`}
+                                                    />
+                                                ))}
+                                                {/* Stack of Pending documents (Amber) */}
+                                                {Array.from({ length: data.pending }).map((_, idx) => (
+                                                    <div 
+                                                        key={`pending-${idx}`}
+                                                        className={`flex-1 w-full rounded-[2px] border transition-all duration-300 ${getAmberShadeClass(idx)}`}
+                                                    />
+                                                ))}
+                                            </>
+                                        )}
+
                                         {/* Real-time Tooltip */}
                                         <div className="absolute -top-20 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-[8px] opacity-0 group-hover/bar:opacity-100 transition-all pointer-events-none whitespace-nowrap z-30 shadow-2xl scale-90 group-hover/bar:scale-100 border border-white/10">
                                                 <div className="space-y-1.5">
@@ -244,7 +332,6 @@ const Dashboard = () => {
                                             <span className={`text-[9px] font-black capitalize tracking-widest ${isToday ? 'text-[#12b79f]' : 'text-slate-400'}`}>
                                                 {day}
                                             </span>
-                                        {isToday && <div className="h-1 w-1 rounded-full bg-[#12b79f] mt-1"></div>}
                                         </div>
                                     </div>
                                 );
@@ -316,7 +403,15 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-[#12b79f] to-teal-700 p-6 rounded-[5px] shadow-xl text-white relative overflow-hidden group cursor-pointer">
+                    <div 
+                        onClick={() => {
+                            toast.success("Security Protocols Active", {
+                                description: "All document signatures are legally binding, secured by AES-256 encryption, and compliant with US ESIGN & EU eIDAS regulations.",
+                                duration: 5000,
+                            });
+                        }}
+                        className="bg-gradient-to-br from-[#12b79f] to-teal-700 p-6 rounded-[5px] shadow-xl text-white relative overflow-hidden group cursor-pointer"
+                    >
                         <div className="relative z-10 space-y-4">
                             <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-[5px] flex items-center justify-center">
                                 <ShieldCheck className="h-6 w-6" />

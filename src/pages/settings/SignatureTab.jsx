@@ -53,7 +53,8 @@ const SignatureTab = ({ sigType, setSigType, sigPad, userData, clearSignature, s
                                 <button 
                                     onClick={saveSignature}
                                     disabled={loading}
-                                    className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-[5px] text-[11px] font-medium tracking-wide flex items-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                                    style={{ backgroundColor: '#12b79f' }}
+                                    className="text-white px-6 py-2.5 rounded-[5px] text-[11px] font-medium tracking-wide flex items-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
                                 >
                                     {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                                     Save signature
@@ -100,7 +101,8 @@ const SignatureTab = ({ sigType, setSigType, sigPad, userData, clearSignature, s
                                     <button 
                                         onClick={saveSignature}
                                         disabled={loading || !uploadedSignature}
-                                        className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-[5px] text-[11px] font-medium tracking-wide flex items-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                                        style={{ backgroundColor: '#12b79f' }}
+                                        className="text-white px-6 py-2.5 rounded-[5px] text-[11px] font-medium tracking-wide flex items-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
                                     >
                                         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                                         Save uploaded signature

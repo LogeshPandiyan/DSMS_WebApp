@@ -16,6 +16,7 @@ import SetupAccount from './features/auth/SetupAccount';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout';
 import { Toaster } from 'sonner';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -44,7 +45,7 @@ function App() {
           </Route>
 
           {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>

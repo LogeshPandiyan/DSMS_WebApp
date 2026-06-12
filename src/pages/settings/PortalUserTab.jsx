@@ -305,7 +305,7 @@ const PortalUserTab = ({ currentUser }) => {
             </div>
 
             <div className="relative">
-                <div className="w-full overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500">
+                <div className="w-full overflow-x-auto min-h-[260px] rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm [&::-webkit-scrollbar]:h-[6px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-500">
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/50">
@@ -365,7 +365,7 @@ const PortalUserTab = ({ currentUser }) => {
                                                 </button>
 
                                                 {openDropdownId === user._id && (
-                                                    <div className={`absolute ${index > 0 && index >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} -left-2 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150`}>
+                                                    <div className={`absolute ${index > 0 && index >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} left-0 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150`}>
                                                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                                                             <p className="text-[10px] font-medium text-slate-400 tracking-widest">Modify access</p>
                                                         </div>

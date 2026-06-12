@@ -17,9 +17,10 @@ export const SocketProvider = ({ children, user }) => {
         if (user && user._id) {
             const fetchSavedNotifications = async () => {
                 try {
-                    const data = await getNotifications();
-                    // data is an array of DB notification objects
-                    const mapped = data.map(n => ({
+                    const response = await getNotifications();
+                    // response is { success, status_code, message, data }
+                    const notificationList = response?.data || [];
+                    const mapped = notificationList.map(n => ({
                         id: n._id,
                         title: n.title,
                         message: n.message,

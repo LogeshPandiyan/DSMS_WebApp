@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Mail, LogOut, ChevronDown, Shield, Settings } from 'lucide-react';
+import { User, Mail, LogOut, ChevronDown } from 'lucide-react';
 
 const UserDropdown = ({ user, onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -73,17 +73,7 @@ const UserDropdown = ({ user, onLogout }) => {
                             </div>
                         </div>
                     </div>
-                    
-                    <div className="p-2">
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-[5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 dark:hover:text-white transition-all text-sm font-medium">
-                            <Shield className="h-4 w-4 text-primary-500" />
-                            Security Settings
-                        </button>
-                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-[5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 dark:hover:text-white transition-all text-sm font-medium">
-                            <Settings className="h-4 w-4 text-slate-500" />
-                            Account Preferences
-                        </button>
-                    </div>
+
 
                     <div className="p-2 border-t border-slate-100 dark:border-white/5">
                         <button 

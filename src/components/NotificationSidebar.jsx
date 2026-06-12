@@ -1,15 +1,78 @@
 import React, { useState } from 'react';
-import { X, Bell, FileText, CheckCircle2, CheckCheck, Trash2 } from 'lucide-react';
+import { X, Bell, FileText, CheckCircle2, CheckCheck, Trash2, ChevronDown } from 'lucide-react';
 
 const NotificationSidebar = ({ isOpen, onClose, notifications, onMarkAllAsRead, onClearAll }) => {
     const [clearingIds, setClearingIds] = useState(new Set());
     const [isClearing, setIsClearing] = useState(false);
+    const [collapsedGroups, setCollapsedGroups] = useState({
+        today: false,
+        yesterday: false,
+        older: false
+    });
 
-    const formatTime = (date) => {
-        return new Date(date).toLocaleTimeString([], {
+    const toggleGroup = (groupKey) => {
+        setCollapsedGroups(prev => ({
+            ...prev,
+            [groupKey]: !prev[groupKey]
+        }));
+    };
+
+    const groupedNotifications = (() => {
+        const grouped = {
+            today: [],
+            yesterday: [],
+            older: []
+        };
+
+        notifications.forEach(notif => {
+            if (!notif.time) return;
+            const date = new Date(notif.time);
+            const now = new Date();
+            
+            const dateZero = new Date(date).setHours(0, 0, 0, 0);
+            const todayZero = new Date(now).setHours(0, 0, 0, 0);
+            const diffDays = Math.round((todayZero - dateZero) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                grouped.today.push(notif);
+            } else if (diffDays === 1) {
+                grouped.yesterday.push(notif);
+            } else {
+                grouped.older.push(notif);
+            }
+        });
+
+        return grouped;
+    })();
+
+    const formatTime = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const now = new Date();
+        
+        // Reset hours to compare calendar days
+        const dateZero = new Date(date).setHours(0, 0, 0, 0);
+        const todayZero = new Date(now).setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.round((todayZero - dateZero) / (1000 * 60 * 60 * 24));
+
+        const timeStr = date.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit'
         });
+
+        if (diffDays === 0) {
+            return `Today, ${timeStr}`;
+        } else if (diffDays === 1) {
+            return `Yesterday, ${timeStr}`;
+        } else {
+            const dateStr = date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+            return `${dateStr}, ${timeStr}`;
+        }
     };
 
     const handleClearAll = async () => {
@@ -71,38 +134,67 @@ const NotificationSidebar = ({ isOpen, onClose, notifications, onMarkAllAsRead, 
                             <p className="text-sm font-bold uppercase tracking-widest">No Notifications Yet</p>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {notifications.map((notif) => (
-                                <div
-                                    key={notif.id}
-                                    style={{
-                                        transition: 'transform 0.35s ease, opacity 0.35s ease',
-                                        transform: clearingIds.has(notif.id) ? 'translateX(120%)' : 'translateX(0)',
-                                        opacity: clearingIds.has(notif.id) ? 0 : 1,
-                                    }}
-                                    className={`p-4 rounded-[5px] border cursor-default
-                                        ${notif.read
-                                            ? 'bg-white dark:bg-slate-900 border-slate-100 dark:border-white/5'
-                                            : 'bg-primary-500/5 border-primary-500/20 dark:bg-primary-500/10'}`}
-                                >
-                                    <div className="flex gap-3">
-                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0
-                                            ${notif.type === 'DOCUMENT_ASSIGNED' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                            {notif.type === 'DOCUMENT_ASSIGNED' ? <FileText className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-start justify-between gap-1">
-                                                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{notif.title}</p>
-                                                {!notif.read && (
-                                                    <span className="h-2 w-2 rounded-full bg-primary-500 shrink-0 mt-1"></span>
-                                                )}
+                        <div className="space-y-5">
+                            {Object.entries(groupedNotifications).map(([key, items]) => {
+                                if (items.length === 0) return null;
+                                const label = key === 'today' ? 'Today' : key === 'yesterday' ? 'Yesterday' : 'Older';
+                                const collapsed = collapsedGroups[key];
+
+                                return (
+                                    <div key={key} className="space-y-3">
+                                        {/* Group Accordion Header */}
+                                        <div 
+                                            onClick={() => toggleGroup(key)}
+                                            className="flex items-center justify-between py-1 px-1 cursor-pointer select-none text-slate-400 dark:text-slate-500 hover:text-slate-650 dark:hover:text-slate-350 transition-colors font-black text-[10px] tracking-wider border-b border-slate-100 dark:border-white/5 pb-1.5"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span>{label}</span>
+                                                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                                    {items.length}
+                                                </span>
                                             </div>
-                                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{notif.message}</p>
-                                            <p className="text-[9px] text-slate-400 mt-2 font-medium">{formatTime(notif.time)}</p>
+                                            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-250 ${collapsed ? '-rotate-90' : ''}`} />
                                         </div>
+
+                                        {/* Group Items (with transition support) */}
+                                        {!collapsed && (
+                                            <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                {items.map((notif) => (
+                                                    <div
+                                                        key={notif.id}
+                                                        style={{
+                                                            transition: 'transform 0.35s ease, opacity 0.35s ease',
+                                                            transform: clearingIds.has(notif.id) ? 'translateX(120%)' : 'translateX(0)',
+                                                            opacity: clearingIds.has(notif.id) ? 0 : 1,
+                                                        }}
+                                                        className={`p-4 rounded-[5px] border cursor-default
+                                                            ${notif.read
+                                                                ? 'bg-white dark:bg-slate-900 border-slate-100 dark:border-white/5'
+                                                                : 'bg-primary-500/5 border-primary-500/20 dark:bg-primary-500/10'}`}
+                                                    >
+                                                        <div className="flex gap-3">
+                                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0
+                                                                ${notif.type === 'DOCUMENT_ASSIGNED' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                                {notif.type === 'DOCUMENT_ASSIGNED' ? <FileText className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-start justify-between gap-1">
+                                                                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{notif.title}</p>
+                                                                    {!notif.read && (
+                                                                        <span className="h-2 w-2 rounded-full bg-primary-500 shrink-0 mt-1"></span>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{notif.message}</p>
+                                                                <p className="text-[9px] text-slate-400 mt-2 font-medium">{formatTime(notif.time)}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>

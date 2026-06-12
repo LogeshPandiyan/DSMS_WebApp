@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Users, PenTool, Bell, Shield, Loader2 } from 'lucide-react';
+import { User, Users, PenTool, Bell, Shield, Loader2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
 import { getMe, updateProfile, updateSignature, updateNotifications, updatePassword } from '../../services/authService';
@@ -246,6 +246,8 @@ const Settings = () => {
         { id: 'security', label: 'Security', icon: Shield, roles: ['admin', 'manager', 'employee'] },
     ].filter(tab => tab.roles.includes(userData?.role));
 
+    const isValidTab = tabs.some(tab => tab.id === activeTab);
+
     return (
         <div className="w-full space-y-6 animate-in fade-in duration-500 pb-20">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-sm overflow-hidden flex flex-col">
@@ -271,62 +273,81 @@ const Settings = () => {
 
                 {/* Content Area */}
                 <main className="flex-1 p-[10px] min-h-[500px]">
-                    {activeTab === 'profile' && (
-                        <ProfileTab 
-                            userData={userData}
-                            name={name}
-                            setName={setName}
-                            avatar={avatar}
-                            setAvatar={setAvatar}
-                            phone={phone}
-                            setPhone={setPhone}
-                            jobTitle={jobTitle}
-                            setJobTitle={setJobTitle}
-                            department={department}
-                            setDepartment={setDepartment}
-                            bio={bio}
-                            setBio={setBio}
-                            location={location}
-                            setLocation={setLocation}
-                            loading={loading}
-                            handleProfileUpdate={handleProfileUpdate}
-                        />
-                    )}
+                    {!isValidTab ? (
+                        <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 space-y-4">
+                            <ShieldAlert className="h-12 w-12 text-[#12b79f]" />
+                            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Settings Tab Not Found</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+                                The settings tab you are trying to access does not exist.
+                            </p>
+                            <button 
+                                onClick={() => setActiveTab('profile')}
+                                style={{ backgroundColor: '#12b79f' }}
+                                className="px-4 py-2 text-white rounded-[5px] text-xs font-bold shadow-sm"
+                            >
+                                Go to Profile
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            {activeTab === 'profile' && (
+                                <ProfileTab 
+                                    userData={userData}
+                                    name={name}
+                                    setName={setName}
+                                    avatar={avatar}
+                                    setAvatar={setAvatar}
+                                    phone={phone}
+                                    setPhone={setPhone}
+                                    jobTitle={jobTitle}
+                                    setJobTitle={setJobTitle}
+                                    department={department}
+                                    setDepartment={setDepartment}
+                                    bio={bio}
+                                    setBio={setBio}
+                                    location={location}
+                                    setLocation={setLocation}
+                                    loading={loading}
+                                    handleProfileUpdate={handleProfileUpdate}
+                                />
+                            )}
 
-                    {activeTab === 'portal-user' && (
-                        <PortalUserTab 
-                            currentUser={currentUser}
-                        />
-                    )}
+                            {activeTab === 'portal-user' && (
+                                <PortalUserTab 
+                                    currentUser={currentUser}
+                                />
+                            )}
 
-                    {activeTab === 'signature' && (
-                        <SignatureTab 
-                            sigType={sigType}
-                            setSigType={setSigType}
-                            sigPad={sigPad}
-                            userData={userData}
-                            clearSignature={clearSignature}
-                            saveSignature={saveSignature}
-                            loading={loading}
-                            uploadedSignature={uploadedSignature}
-                            handleSignatureUpload={handleSignatureUpload}
-                        />
-                    )}
+                            {activeTab === 'signature' && (
+                                <SignatureTab 
+                                    sigType={sigType}
+                                    setSigType={setSigType}
+                                    sigPad={sigPad}
+                                    userData={userData}
+                                    clearSignature={clearSignature}
+                                    saveSignature={saveSignature}
+                                    loading={loading}
+                                    uploadedSignature={uploadedSignature}
+                                    handleSignatureUpload={handleSignatureUpload}
+                                />
+                            )}
 
-                    {activeTab === 'notifications' && (
-                        <NotificationsTab 
-                            notifications={notifications}
-                            onToggle={handleNotificationToggle}
-                        />
-                    )}
+                            {activeTab === 'notifications' && (
+                                <NotificationsTab 
+                                    notifications={notifications}
+                                    onToggle={handleNotificationToggle}
+                                />
+                            )}
 
-                    {activeTab === 'security' && (
-                        <SecurityTab 
-                            passwords={passwords}
-                            setPasswords={setPasswords}
-                            handlePasswordUpdate={handlePasswordUpdate}
-                            loading={loading}
-                        />
+                            {activeTab === 'security' && (
+                                <SecurityTab 
+                                    passwords={passwords}
+                                    setPasswords={setPasswords}
+                                    handlePasswordUpdate={handlePasswordUpdate}
+                                    loading={loading}
+                                />
+                            )}
+                        </>
                     )}
                 </main>
             </div>

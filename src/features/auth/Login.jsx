@@ -63,7 +63,7 @@ const Login = () => {
 
                     <div className="space-y-6 mt-32">
                         <h1 className="text-5xl font-black text-white leading-tight tracking-tight">
-                            Secure Document <br />
+                           Digital Signature <br />
                             <span style={{ color: brandColor }}>Management System.</span>
                         </h1>
                         <p className="text-slate-400 text-lg max-w-md font-medium leading-relaxed">
