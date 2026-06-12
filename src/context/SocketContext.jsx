@@ -39,7 +39,16 @@ export const SocketProvider = ({ children, user }) => {
 
     useEffect(() => {
         if (user && user._id) {
-            const socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+            // Dynamically derive socket URL from API URL if VITE_SOCKET_URL is not defined                          
+            let socketUrl = import.meta.env.VITE_SOCKET_URL;
+            if (!socketUrl && import.meta.env.VITE_API_URL) {
+                socketUrl = import.meta.env.VITE_API_URL.split('/api')[0];
+            }
+            if (!socketUrl) {
+                socketUrl = 'http://localhost:5000';
+            }
+
+            const socketInstance = io(socketUrl, {
                 withCredentials: true
             });
 
