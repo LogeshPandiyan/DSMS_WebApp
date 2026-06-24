@@ -21,4 +21,10 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+# env files
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env*.local
