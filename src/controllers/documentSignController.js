@@ -5,6 +5,7 @@ const { PDFDocument } = require('pdf-lib');
 const { sendEmail, templates } = require('../utils/emailService');
 const { createAuditLog } = require('../utils/auditLogger');
 const { sendNotification } = require('../utils/socket');
+const crypto = require('crypto');
 
 // @desc    Save signature fields and promote draft → pending (send for signing)
 // @route   PUT /api/documents/save-fields/:id
@@ -29,16 +30,31 @@ const updateDocumentFields = async (req, res) => {
 
         // If it was a draft, promote it to pending now that fields are set
         let promoted = false;
+        let tokenMap = {}; // userId -> rawToken
         if (document.status === 'draft') {
             document.status = 'pending';
             promoted = true;
+
+            document.signTokens = [];
+            const assignedToArray = document.assignedTo || [];
+            assignedToArray.forEach(userId => {
+                const rawToken = crypto.randomBytes(32).toString('hex');
+                const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+                document.signTokens.push({
+                    user: userId,
+                    token: hashedToken,
+                    isUsed: false,
+                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days expiry
+                });
+                tokenMap[userId.toString()] = rawToken;
+            });
         }
 
         await document.save();
 
         const populatedDoc = await Document.findById(document._id)
             .populate('uploadedBy', 'name email role')
-            .populate('assignedTo', 'name email role')
+            .populate('assignedTo', 'name email role isInvited')
             .populate('fields.user', 'name email role')
             .populate('signatures.user', 'name email role');
 
@@ -69,7 +85,7 @@ const updateDocumentFields = async (req, res) => {
                     type: 'DOCUMENT_ASSIGNED',
                     title: 'New Document Assigned',
                     message: `You have been assigned a new document: ${document.title}`,
-                    documentId: document._id
+                    metadata: { documentId: document._id }
                 });
             });
 
@@ -78,10 +94,15 @@ const updateDocumentFields = async (req, res) => {
                 try {
                     const usersToNotify = await User.find({ _id: { $in: assignedToArray } });
                     usersToNotify.forEach(user => {
+                        const rawToken = tokenMap[user._id.toString()];
+                        const customLink = rawToken
+                            ? `${process.env.FRONTEND_URL}/sign/${document._id}?token=${rawToken}&email=${encodeURIComponent(user.email)}`
+                            : null;
+
                         sendEmail(
                             user.email,
                             document.emailSettings?.subject || `Signature Request: ${document.title}`,
-                            templates.documentAssigned(user.name, document.title, document._id, document.emailSettings?.message),
+                            templates.documentAssigned(user.name, document.title, document._id, document.emailSettings?.message, customLink),
                             document.emailSettings?.replyTo,
                             document.emailSettings?.cc
                         );
@@ -108,6 +129,28 @@ const signDocument = async (req, res) => {
     try {
         const { signatures } = req.body; // { fieldId: dataUrl, ... }
         console.log(`Signing document ${req.params.id} for user ${req.user._id}`);
+
+        // Capture client details (IP Address, User-Agent browser & OS)
+        const ua = req.headers['user-agent'];
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip || 'Unknown IP';
+        
+        let browser = 'Unknown Browser';
+        let os = 'Unknown OS';
+        
+        if (ua) {
+            if (ua.includes('Windows')) os = 'Windows';
+            else if (ua.includes('Macintosh') || ua.includes('Mac OS')) os = 'macOS';
+            else if (ua.includes('Linux')) os = 'Linux';
+            else if (ua.includes('Android')) os = 'Android';
+            else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+            if (ua.includes('Chrome') && !ua.includes('Chromium') && !ua.includes('Edg')) browser = 'Google Chrome';
+            else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+            else if (ua.includes('Firefox')) browser = 'Mozilla Firefox';
+            else if (ua.includes('Edg')) browser = 'Microsoft Edge';
+            else if (ua.includes('Trident') || ua.includes('MSIE')) browser = 'Internet Explorer';
+            else if (ua.includes('Chromium')) browser = 'Chromium';
+        }
 
         if (!signatures || Object.keys(signatures).length === 0) {
             return res.status(400).json({
@@ -191,6 +234,9 @@ const signDocument = async (req, res) => {
                         fieldId: fieldId,
                         signatureData: typeof signatureData === 'string' ? signatureData : signatureData.dataUrl,
                         color: typeof signatureData === 'object' ? signatureData.color : (signatureData.color || '#000000'),
+                        ipAddress: ipAddress,
+                        browser: browser,
+                        os: os,
                         signedAt: new Date()
                     });
                 }
@@ -213,12 +259,22 @@ const signDocument = async (req, res) => {
             document.status = 'partially_signed';
         }
 
+        // Mark sign token as used if it was a token-based sign
+        const signToken = req.headers['x-sign-token'];
+        if (signToken) {
+            const hashedToken = crypto.createHash('sha256').update(signToken).digest('hex');
+            const tokenEntry = document.signTokens.find(entry => entry.token === hashedToken);
+            if (tokenEntry) {
+                tokenEntry.isUsed = true;
+            }
+        }
+
         await document.save();
         console.log('Document signed and saved successfully');
 
         const populatedDoc = await Document.findById(document._id)
             .populate('uploadedBy', 'name email role')
-            .populate('assignedTo', 'name email role')
+            .populate('assignedTo', 'name email role isInvited')
             .populate('fields.user', 'name email role')
             .populate('signatures.user', 'name email role');
 
@@ -239,15 +295,7 @@ const signDocument = async (req, res) => {
             req
         });
 
-        // Real-time notification → notify the uploader (Admin/Manager)
-        sendNotification(document.uploadedBy, {
-            type: 'DOCUMENT_SIGNED',
-            title: 'Document Signed',
-            message: `${req.user.name} has signed the document: ${document.title}`,
-            documentId: document._id
-        });
-
-        // Email progress notification to all participants
+        // Email & Real-time progress notification to all participants
         try {
             const populatedDoc = await Document.findById(document._id)
                 .populate('uploadedBy', 'name email')
@@ -265,21 +313,34 @@ const signDocument = async (req, res) => {
             const unsignedUsers = populatedDoc.assignedTo.filter(u => !signedUserIds.includes(u._id.toString()));
             const unsignedNames = unsignedUsers.map(u => u.name);
 
-            // Deduplicate participants to avoid sending multiple identical emails to the same user
-            const uniqueParticipants = Array.from(new Map(allParticipants.map(p => [p.email, p])).values());
+            // Deduplicate participants to avoid sending multiple identical emails/notifications to the same user
+            const participantMap = new Map();
+            allParticipants.forEach(p => {
+                if (p && p._id) {
+                    participantMap.set(p._id.toString(), p);
+                }
+            });
+            const uniqueParticipants = Array.from(participantMap.values());
 
             if (populatedDoc.status === 'signed') {
-                // Send "Completed" email to everyone
+                // Send "Completed" email & notification to everyone
                 uniqueParticipants.forEach(p => {
                     sendEmail(
                         p.email,
                         `Document Completed: ${populatedDoc.title}`,
                         templates.documentCompleted(populatedDoc.title)
                     );
+
+                    sendNotification(p._id, {
+                        type: 'DOCUMENT_COMPLETED',
+                        title: 'Document Completed',
+                        message: `Great news! All participants have signed: ${populatedDoc.title}`,
+                        metadata: { documentId: populatedDoc._id }
+                    });
                 });
             }
             else {
-                // Send progress update to everyone
+                // Send progress update email & notification to everyone
                 const totalSigners = populatedDoc.assignedTo.length;
                 const signedCount = signedUserIds.length;
                 
@@ -294,9 +355,17 @@ const signDocument = async (req, res) => {
                             signedCount,
                             totalSigners,
                             unsignedNames.length > 0 ? unsignedNames : ['Wait, finalizing...'],
-                            req.user.name // The user who just signed
+                            req.user.name, // The user who just signed
+                            populatedDoc._id // The document ID for direct link
                         )
                     );
+
+                    sendNotification(p._id, {
+                        type: 'DOCUMENT_SIGNED',
+                        title: 'Signature Update',
+                        message: `${req.user.name} has signed the document. Progress: ${signedCount}/${totalSigners} signed.`,
+                        metadata: { documentId: populatedDoc._id }
+                    });
                 });
             }
         }

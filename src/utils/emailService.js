@@ -45,7 +45,9 @@ const sendEmail = async (to, subject, html, replyTo = null, cc = null) => {
  * Templates
  */
 const templates = {
-  documentAssigned: (userName, docTitle, docId, customMessage = null) => `
+  documentAssigned: (userName, docTitle, docId, customMessage = null, customLink = null) => {
+    const link = customLink || `${process.env.FRONTEND_URL}/sign/${docId}`;
+    return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h1 style="color: #0e9e8a;">DSMS</h1>
@@ -64,17 +66,19 @@ const templates = {
             }
 
             <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL}/sign/${docId}" style="background-color: #0e9e8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Sign Document</a>
+                <a href="${link}" style="background-color: #0e9e8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Sign Document</a>
             </div>
-            <p style="font-size: 12px; color: #64748b;">If the button doesn't work, copy this link: ${process.env.FRONTEND_URL}/sign/${docId}</p>
+            <p style="font-size: 12px; color: #64748b;">If the button doesn't work, copy this link: ${link}</p>
         </div>
-    `,
+    `;
+  },
   signatureProgress: (
     docTitle,
     signedCount,
     totalCount,
     remainingUsers,
     justSignedUser,
+    docId,
   ) => `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
             <h2 style="color: #0e9e8a;">Signature Update</h2>
@@ -82,6 +86,9 @@ const templates = {
             <p><b>${justSignedUser}</b> has just signed the document.</p>
             <p>Progress: <b>${signedCount} out of ${totalCount}</b> people have signed.</p>
             <p>Waiting for: <b>${remainingUsers.join(", ")}</b></p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL}/sign/${docId}" style="background-color: #0e9e8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">View/Sign Document</a>
+            </div>
         </div>
     `,
   documentCompleted: (docTitle) => `

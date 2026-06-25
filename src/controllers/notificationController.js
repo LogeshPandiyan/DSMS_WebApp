@@ -64,3 +64,35 @@ exports.deleteAllNotifications = async (req, res) => {
         });
     }
 };
+
+// Mark a single notification as read
+exports.markAsRead = async (req, res) => {
+    try {
+        const notification = await Notification.findOneAndUpdate(
+            { _id: req.params.id, recipient: req.user._id },
+            { $set: { read: true } },
+            { new: true }
+        );
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                status_code: 404,
+                message: "Notification not found"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            status_code: 200,
+            message: "Notification marked as read",
+            data: notification
+        });
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        res.status(500).json({
+            success: false,
+            status_code: 500,
+            message: "Error marking notification as read", error: error.message
+        });
+    }
+};
+

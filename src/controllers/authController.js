@@ -5,13 +5,82 @@ const crypto = require("crypto");
 
 // Register a new user // @access  Public
 const registerUser = async (req, res) => {
-  // Disable public registration per Admin Invite Workflow
-  return res.status(403).json({
-    success: false,
-    statusCode: 403,
-    message:
-      "Public registration is disabled. Please contact an administrator for an invite.",
-  });
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "All fields are required",
+      });
+    }
+
+    const userExists = await User.findOne({ email }).select("+password");
+
+    if (userExists) {
+      // If user was auto-invited/guest-created and hasn't set their password yet
+      if (userExists.isInvited && !userExists.password) {
+        userExists.name = name;
+        userExists.password = password;
+        userExists.isInvited = false;
+        await userExists.save();
+
+        return res.status(201).json({
+          success: true,
+          statusCode: 201,
+          message: "User registered successfully",
+          data: {
+            _id: userExists._id,
+            name: userExists.name,
+            email: userExists.email,
+            role: userExists.role,
+            token: generateToken(userExists._id),
+          },
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "User already exists with this email",
+      });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: "user",
+    });
+
+    if (user) {
+      res.status(201).json({
+        success: true,
+        statusCode: 201,
+        message: "User registered successfully",
+        data: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          token: generateToken(user._id),
+        },
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        statusCode: 400,
+        message: "Invalid user data",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      statusCode: 500,
+      message: error.message || "Server error",
+    });
+  }
 };
 
 // Authenticate user & get token
@@ -28,34 +97,43 @@ const loginUser = async (req, res) => {
     }
 
     const registeredUser = await User.findOne({ email }).select("+password");
-    if (registeredUser && (await registeredUser.matchPassword(password))) {
-      await createAuditLog({
-        user: registeredUser,
-        action: "LOGIN",
-        details: `User ${registeredUser.name} logged in`,
-        targetType: "auth",
-        req,
+    if (!registeredUser) {
+      return res.status(401).json({
+        success: false,
+        statusCode: 401,
+        message: "User not found with this email",
       });
+    }
 
-      res.json({
-        success: true,
-        statusCode: 200,
-        message: "User Logged in Successfully",
-        data: {
-          _id: registeredUser._id,
-          name: registeredUser.name,
-          email: registeredUser.email,
-          role: registeredUser.role,
-          token: generateToken(registeredUser._id),
-        },
-      });
-    } else {
-      res.status(401).json({
+    const isMatch = await registeredUser.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
         success: false,
         statusCode: 401,
         message: "Invalid email or password",
       });
     }
+
+    await createAuditLog({
+      user: registeredUser,
+      action: "LOGIN",
+      details: `User ${registeredUser.name} logged in`,
+      targetType: "auth",
+      req,
+    });
+
+    res.json({
+      success: true,
+      statusCode: 200,
+      message: "User Logged in Successfully",
+      data: {
+        _id: registeredUser._id,
+        name: registeredUser.name,
+        email: registeredUser.email,
+        role: registeredUser.role,
+        token: generateToken(registeredUser._id),
+      },
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -454,7 +532,7 @@ const inviteUser = async (req, res) => {
       jobTitle: jobTitle || "",
       department: department || "",
       location: location || "",
-      role: role || "employee",
+      role: role || "user",
       phone: phone || "",
       isInvited: true,
       inviteToken: hashedInviteToken,

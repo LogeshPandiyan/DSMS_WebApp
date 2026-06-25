@@ -9,22 +9,75 @@ const { createAuditLog } = require('../utils/auditLogger');
 // @access  Private (Admin/Manager)
 const uploadDocument = async (req, res) => {
     try {
+        const { title, assignedTo, customEmails } = req.body;
+
+        // 1. Validate title
+        if (!title || !title.trim()) {
+            if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+                success: false,
+                statusCode: 400,
+                message: 'Document name is required'
+            });
+        }
+
+        // 2. Validate file presence
         if (!req.file) {
             return res.status(400).json({
                 success: false,
                 statusCode: 400,
-                message: 'Document upload failed: No file was selected or the file type is invalid.'
+                message: 'Document attachment is required'
             });
         }
 
-        const { title, assignedTo } = req.body;
-
-        // Handle assignedTo as array (if coming from FormData as multiple fields or comma string)
+        // Parse assignedTo
         let assignedToArray = [];
         if (assignedTo) {
             assignedToArray = Array.isArray(assignedTo)
                 ? assignedTo
-                : assignedTo.split(',').map(id => id.trim());
+                : assignedTo.split(',').map(id => id.trim()).filter(Boolean);
+        }
+
+        // Parse customEmails
+        let emailList = [];
+        if (customEmails) {
+            emailList = customEmails.split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
+        }
+
+        // 3. Validate at least one recipient
+        if (assignedToArray.length === 0 && emailList.length === 0) {
+            if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({
+                success: false,
+                statusCode: 400,
+                message: 'At least one recipient is required'
+            });
+        }
+
+        // Process customEmails if provided
+        if (emailList.length > 0) {
+            for (const email of emailList) {
+                let user = await User.findOne({ email });
+                if (!user) {
+                    const defaultName = email.split('@')[0];
+                    const capitalizedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+                    user = await User.create({
+                        name: capitalizedName,
+                        email,
+                        role: 'user',
+                        isInvited: true, // Bypass password validation
+                        isActive: true
+                    });
+                }
+                const userIdStr = user._id.toString();
+                if (!assignedToArray.includes(userIdStr)) {
+                    assignedToArray.push(userIdStr);
+                }
+            }
         }
 
         const document = await Document.create({
@@ -38,7 +91,7 @@ const uploadDocument = async (req, res) => {
 
         const populatedDoc = await Document.findById(document._id)
             .populate('uploadedBy', 'name email role')
-            .populate('assignedTo', 'name email role');
+            .populate('assignedTo', 'name email role isInvited');
 
         res.status(201).json({
             success: true,
@@ -74,7 +127,7 @@ const uploadDocument = async (req, res) => {
 const getDocumentCounts = async (req, res) => {
     try {
         let query = {};
-        if (req.user.role === 'employee') {
+        if (req.user.role === 'user') {
             query = { assignedTo: req.user._id };
         }
 
@@ -98,7 +151,7 @@ const getDocumentCounts = async (req, res) => {
             counts.pending = await Document.countDocuments({ ...query, status: 'pending' });
             counts.signed = await Document.countDocuments({ ...query, status: 'signed' });
             counts.wfo = await Document.countDocuments({ ...query, status: 'partially_signed' });
-            counts.draft = 0; // Employees can't see drafts
+            counts.draft = 0; // Users can't see drafts
         }
 
         res.status(200).json({
@@ -130,7 +183,7 @@ const getDocuments = async (req, res) => {
         if (userRole === 'admin' || userRole === 'manager') {
             query = {}; // Admin/Manager sees all
         }
-        else if (userRole === 'employee') {
+        else if (userRole === 'user') {
             query = { assignedTo: req.user._id, status: { $ne: 'draft' } };
         }
 
@@ -160,7 +213,7 @@ const getDocuments = async (req, res) => {
 
         // Base query for status counts
         let countBaseQuery = {};
-        if (userRole === 'employee') {
+        if (userRole === 'user') {
             countBaseQuery = { assignedTo: req.user._id };
         }
 
@@ -174,7 +227,7 @@ const getDocuments = async (req, res) => {
             Document.countDocuments(query),
             Document.find(query)
                 .populate('uploadedBy', 'name email role')
-                .populate('assignedTo', 'name email role')
+                .populate('assignedTo', 'name email role isInvited')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(Number(limit)),
@@ -227,7 +280,7 @@ const getDocumentById = async (req, res) => {
     try {
         const document = await Document.findById(req.params.id)
             .populate('uploadedBy', 'name email role')
-            .populate('assignedTo', 'name email role')
+            .populate('assignedTo', 'name email role isInvited')
             .populate('fields.user', 'name email role')
             .populate('signatures.user', 'name email role');
 

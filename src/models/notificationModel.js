@@ -16,7 +16,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['DOCUMENT_ASSIGNED', 'DOCUMENT_COMPLETED', 'SYSTEM_ALERT', 'GENERAL'],
+        enum: ['DOCUMENT_ASSIGNED', 'DOCUMENT_SIGNED', 'DOCUMENT_COMPLETED', 'SYSTEM_ALERT', 'GENERAL'],
         default: 'GENERAL'
     },
     read: {

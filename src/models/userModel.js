@@ -8,8 +8,7 @@ const userSchema = mongoose.Schema(
             required: [true, 'User name is required.'],
             trim: true,
             minlength: [3, 'Name must be at least 3 characters'],
-            maxlength: [40, 'Name cannot exceed 50 characters'],
-            match: [/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces']
+            maxlength: [40, 'Name cannot exceed 50 characters']
         },
         email: {
             type: String,
@@ -30,8 +29,8 @@ const userSchema = mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['admin', 'manager', 'employee'],
-            default: 'employee'
+            enum: ['admin', 'manager', 'user'],
+            default: 'user'
         },
         signature: {
             type: String, // Base64 or URL
@@ -83,6 +82,7 @@ const userSchema = mongoose.Schema(
 
 // Method to compare entered password with hashed password
 userSchema.methods.matchPassword = async function (enteredPassword) {
+    if (!this.password || !enteredPassword) return false;
     return await bcrypt.compare(enteredPassword, this.password);
 };
 

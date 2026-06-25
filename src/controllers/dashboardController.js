@@ -58,11 +58,12 @@ const getDashboardStats = async (req, res) => {
         });
         const totalUsers = isAdmin ? await User.countDocuments() : 0;
 
-        // Weekly Activity (Sun - Sat) with Pending vs Signed counts
         const today = new Date();
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - today.getDay());
         startOfWeek.setHours(0, 0, 0, 0);
+
+        const serverTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
 
         const activity = await Document.aggregate([
             {
@@ -74,7 +75,7 @@ const getDashboardStats = async (req, res) => {
             {
                 $group: {
                     _id: { 
-                        day: { $dayOfWeek: "$createdAt" },
+                        day: { $dayOfWeek: { date: "$createdAt", timezone: serverTimeZone } },
                         status: "$status"
                     },
                     count: { $sum: 1 }
@@ -87,11 +88,13 @@ const getDashboardStats = async (req, res) => {
             const dayIdx = item._id.day - 1;
             const status = item._id.status;
 
-            if (status === 'signed') {
-                weeklyActivity[dayIdx].signed += item.count;
-            } 
-            else {
-                weeklyActivity[dayIdx].pending += item.count;
+            if (dayIdx >= 0 && dayIdx < 7) {
+                if (status === 'signed') {
+                    weeklyActivity[dayIdx].signed += item.count;
+                } 
+                else {
+                    weeklyActivity[dayIdx].pending += item.count;
+                }
             }
         });
 

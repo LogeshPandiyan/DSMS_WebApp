@@ -2,19 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { uploadDocument, getDocuments, getDocumentById, updateDocument, deleteDocument, getDocumentCounts } = require('../controllers/documentController');
 const { signDocument, updateDocumentFields } = require('../controllers/documentSignController');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, protectOrSignToken } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
 
-// All document routes are protected
-router.use(protect);
+router.post('/upload', protect, upload.single('document'), uploadDocument);
+router.get('/get-counts', protect, getDocumentCounts);
+router.get('/get-all', protect, getDocuments);
+router.put('/save-fields/:id', protect, updateDocumentFields);
+router.put('/update/:id', protect, updateDocument);
+router.delete('/delete/:id', protect, deleteDocument);
 
-router.post('/upload', upload.single('document'), uploadDocument);
-router.get('/get-counts', getDocumentCounts);
-router.get('/get-all', getDocuments);
-router.get('/get-details/:id', getDocumentById);
-router.post('/sign/:id', signDocument);
-router.put('/save-fields/:id', updateDocumentFields);
-router.put('/update/:id', updateDocument);
-router.delete('/delete/:id', deleteDocument);
+// Accessible via normal login OR guest sign token
+router.get('/get-details/:id', protectOrSignToken, getDocumentById);
+router.post('/sign/:id', protectOrSignToken, signDocument);
 
 module.exports = router;

@@ -1,3 +1,11 @@
 node_modules/
 .env
 uploads/
+
+# Local utility scripts
+checkUsers.js
+checkAtlasUsers.js
+seedAdminAtlas.js
+checkDoc.js
+checkDocs.js
+testEmail.js
