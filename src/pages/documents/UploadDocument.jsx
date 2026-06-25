@@ -21,12 +21,14 @@ import { toast } from 'sonner';
 const UploadDocument = () => {
     const [title, setTitle] = useState('');
     const [file, setFile] = useState(null);
+    const [fileError, setFileError] = useState(false);
     const [assignedTo, setAssignedTo] = useState([]);
+    const [customEmails, setCustomEmails] = useState('');
     const [selfSign, setSelfSign] = useState(false);
     const [availableSigners, setAvailableSigners] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [openRoleDropdown, setOpenRoleDropdown] = useState(null); // 'admin', 'manager', 'employee', or null
+    const [openRoleDropdown, setOpenRoleDropdown] = useState(null); // 'admin', 'manager', 'user', or null
     const [assignmentMode, setAssignmentMode] = useState('single'); // 'single' or 'roles'
     const [signerSearch, setSignerSearch] = useState('');
     const { user: currentUser } = useOutletContext();
@@ -34,7 +36,7 @@ const UploadDocument = () => {
     const singleRef = useRef(null);
     const adminRef = useRef(null);
     const managerRef = useRef(null);
-    const employeeRef = useRef(null);
+    const userRef = useRef(null);
 
     // Outside click handler
     useEffect(() => {
@@ -46,7 +48,7 @@ const UploadDocument = () => {
                 let activeRef = null;
                 if (openRoleDropdown === 'admin') activeRef = adminRef;
                 if (openRoleDropdown === 'manager') activeRef = managerRef;
-                if (openRoleDropdown === 'employee') activeRef = employeeRef;
+                if (openRoleDropdown === 'user') activeRef = userRef;
                 
                 if (activeRef && activeRef.current && !activeRef.current.contains(event.target)) {
                     setOpenRoleDropdown(null);
@@ -57,7 +59,7 @@ const UploadDocument = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [openRoleDropdown]);
 
-    const toggleEmployee = (id) => {
+    const toggleUser = (id) => {
         setAssignedTo(prev => 
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         );
@@ -92,7 +94,7 @@ const UploadDocument = () => {
         }
     };
 
-    const removeEmployee = (id, e) => {
+    const removeUser = (id, e) => {
         e.stopPropagation();
         setAssignedTo(prev => prev.filter(i => i !== id));
     };
@@ -121,6 +123,7 @@ const UploadDocument = () => {
         const selectedFile = e.target.files[0];
         if (selectedFile && selectedFile.type === 'application/pdf') {
             setFile(selectedFile);
+            setFileError(false);
         } else {
             toast.error('Please select a valid PDF file');
             e.target.value = null;
@@ -129,7 +132,18 @@ const UploadDocument = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!title || !file || (assignedTo.length === 0 && !selfSign)) {
+        const hasTitle = !!title.trim();
+        const hasRecipients = assignedTo.length > 0 || selfSign || !!customEmails.trim();
+
+        if (!file) {
+            setFileError(true);
+            if (!hasTitle || !hasRecipients) {
+                toast.error('Please fill in all fields and select at least one recipient');
+            }
+            return;
+        }
+
+        if (!hasTitle || !hasRecipients) {
             return toast.error('Please fill in all fields and select at least one recipient');
         }
 
@@ -144,13 +158,15 @@ const UploadDocument = () => {
         }
         
         formData.append('assignedTo', finalRecipients);
+        formData.append('customEmails', customEmails);
 
         try {
             const response = await uploadDocument(formData);
             toast.success('Document uploaded successfully!');
             
-            if (response.data?._id) {
-                navigate(`/prepare/${response.data._id}`);
+            const docId = response.data?.documentId || response.data?._id;
+            if (docId) {
+                navigate(`/prepare/${docId}`);
             } else {
                 navigate('/documents');
             }
@@ -169,7 +185,7 @@ const UploadDocument = () => {
         });
         const isRoleDropdownOpen = openRoleDropdown === role;
 
-        const ref = role === 'admin' ? adminRef : role === 'manager' ? managerRef : employeeRef;
+        const ref = role === 'admin' ? adminRef : role === 'manager' ? managerRef : userRef;
 
         return (
             <div className="relative" ref={ref}>
@@ -232,7 +248,7 @@ const UploadDocument = () => {
                                     <button
                                         key={emp._id}
                                         type="button"
-                                        onClick={() => toggleEmployee(emp._id)}
+                                        onClick={() => toggleUser(emp._id)}
                                         className={`w-full px-2 py-2 text-left flex items-center gap-2.5 transition-all rounded-[4px] mb-0.5 border
                                             ${assignedTo.includes(emp._id) ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'}`}
                                     >
@@ -394,7 +410,7 @@ const UploadDocument = () => {
                                                         </div>
 
                                                         <div className="max-h-72 overflow-y-auto custom-scrollbar">
-                                                            {['admin', 'manager', 'employee'].map(role => {
+                                                            {['admin', 'manager', 'user'].map(role => {
                                                                 const usersInRole = availableSigners.filter(u => 
                                                                     u.role === role && 
                                                                     (u.name.toLowerCase().includes(signerSearch.toLowerCase()) || 
@@ -411,7 +427,7 @@ const UploadDocument = () => {
                                                                             <button
                                                                                 key={emp._id}
                                                                                 type="button"
-                                                                                onClick={() => toggleEmployee(emp._id)}
+                                                                                onClick={() => toggleUser(emp._id)}
                                                                                 className={`w-full px-2 py-2 text-left flex items-center gap-2.5 transition-all rounded-[5px] mb-0.5 border
                                                                                     ${assignedTo.includes(emp._id) ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'}`}
                                                                             >
@@ -449,7 +465,7 @@ const UploadDocument = () => {
                                     )}
                                 </div>
 
-                                {/* Row 2: Select Managers (Left) & Select Employees (Right) (Only if roles mode!) */}
+                                {/* Row 2: Select Managers (Left) & Select Users (Right) (Only if roles mode!) */}
                                 {assignmentMode === 'roles' && (
                                     <>
                                         <div className="space-y-1.5">
@@ -457,11 +473,28 @@ const UploadDocument = () => {
                                             {renderRoleDropdown('manager', Briefcase, 'Managers')}
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Employees</label>
-                                            {renderRoleDropdown('employee', Users, 'Employees')}
+                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Users</label>
+                                            {renderRoleDropdown('user', Users, 'Users')}
                                         </div>
                                     </>
                                 )}
+                            </div>
+
+                            {/* Custom Recipient Emails (Optional) */}
+                            <div className="space-y-1.5">
+                                <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">
+                                    Custom Recipient Emails (Optional, comma-separated)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={customEmails}
+                                    onChange={(e) => setCustomEmails(e.target.value)}
+                                    placeholder="Enter email address"
+                                    className="w-full p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-[5px] text-xs font-medium outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                                />
+                                <p className="text-[12px] text-slate-400 ml-1">
+                                    Separate multiple emails with commas. Users will be automatically created in the database.
+                                </p>
                             </div>
 
                             {/* Selected Chips */}
@@ -475,7 +508,7 @@ const UploadDocument = () => {
                                                 <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200">{emp?.name}</span>
                                                 <button
                                                     type="button"
-                                                    onClick={(e) => removeEmployee(id, e)}
+                                                    onClick={(e) => removeUser(id, e)}
                                                     className="ml-0.5 p-0.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors group"
                                                 >
                                                     <X className="h-3 w-3 text-slate-400 group-hover:text-red-500" />
@@ -488,8 +521,16 @@ const UploadDocument = () => {
 
                             {/* Upload Area Section */}
                             <div className="space-y-1.5">
-                                <label className="text-[13px] font-bold text-slate-900 block ml-1">Document Attachment</label>
-                                <div className={`group relative border-2 border-dashed rounded-[5px] p-8 text-center transition-all duration-300 ${file ? 'border-primary-500 bg-primary-50/20 dark:bg-primary-950/10' : 'border-slate-200 dark:border-slate-800 hover:border-primary-500 hover:bg-primary-50/10 dark:hover:bg-primary-950/10'}`}>
+                                <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">
+                                    Document Attachment <span className="text-red-500">*</span>
+                                </label>
+                                <div className={`group relative border-2 border-dashed rounded-[5px] p-8 text-center transition-all duration-300 
+                                    ${fileError 
+                                        ? 'border-red-500 bg-red-50/10 dark:bg-red-950/10' 
+                                        : file 
+                                            ? 'border-primary-500 bg-primary-50/20 dark:bg-primary-950/10' 
+                                            : 'border-slate-200 dark:border-slate-800 hover:border-primary-500 hover:bg-primary-50/10 dark:hover:bg-primary-950/10'
+                                    }`}>
                                     <input
                                         type="file"
                                         id="file-upload"
@@ -512,6 +553,11 @@ const UploadDocument = () => {
                                         {!file && <div className="mt-1 px-4 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[5px] text-[10px] font-black capitalize tracking-wide text-slate-600 dark:text-slate-300 shadow-sm transition-all group-hover:border-primary-500/30 group-hover:text-primary-600">Choose File</div>}
                                     </label>
                                 </div>
+                                {fileError && (
+                                    <p className="text-xs text-red-500 font-bold mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        Document attachment is required
+                                    </p>
+                                )}
                             </div>
                         </div>
 

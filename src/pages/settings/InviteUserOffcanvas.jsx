@@ -10,7 +10,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
     const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
 
     const roleOptions = [
-        { label: 'Employee', value: 'employee' },
+        { label: 'User', value: 'user' },
         { label: 'Manager', value: 'manager' },
         { label: 'Admin', value: 'admin' }
     ];
@@ -31,7 +31,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
         jobTitle: '',
         department: '',
         location: '',
-        role: 'employee',
+        role: 'user',
         phone: ''
     });
 
@@ -66,7 +66,7 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
     };
 
     const resetAndClose = () => {
-        setFormData({ name: '', email: '', jobTitle: '', department: '', location: '', role: 'employee', phone: '' });
+        setFormData({ name: '', email: '', jobTitle: '', department: '', location: '', role: 'user', phone: '' });
         setInviteLink('');
         onClose();
     };

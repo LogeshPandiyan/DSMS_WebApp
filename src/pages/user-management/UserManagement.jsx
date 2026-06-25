@@ -99,7 +99,7 @@ const UserManagement = () => {
                 return 'bg-rose-500/10 text-rose-600 border-rose-500/20';
             case 'manager':
                 return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-            case 'employee':
+            case 'user':
                 return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
             default:
                 return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
@@ -112,7 +112,7 @@ const UserManagement = () => {
                 return <ShieldAlert className="h-3.5 w-3.5" />;
             case 'manager':
                 return <Briefcase className="h-3.5 w-3.5" />;
-            case 'employee':
+            case 'user':
                 return <UserCircle className="h-3.5 w-3.5" />;
             default:
                 return <Shield className="h-3.5 w-3.5" />;
@@ -221,7 +221,7 @@ const UserManagement = () => {
                                                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modify Access</p>
                                                         </div>
-                                                        {['admin', 'manager', 'employee'].map(role => (
+                                                        {['admin', 'manager', 'user'].map(role => (
                                                             <button
                                                                 key={role}
                                                                 onClick={() => handleRoleChange(user, role)}

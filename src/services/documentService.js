@@ -65,9 +65,9 @@ export const deleteDocument = async (id) => {
     }
 };
 
-export const getDocumentById = async (id) => {
+export const getDocumentById = async (id, headers = {}) => {
     try {
-        const documentDetailsResponse = await API.get(`${API_URL}/get-details/${id}`);
+        const documentDetailsResponse = await API.get(`${API_URL}/get-details/${id}`, { headers });
         return documentDetailsResponse.data;
     }
     catch (error) {
@@ -76,9 +76,9 @@ export const getDocumentById = async (id) => {
     }
 };
 
-export const signDocument = async (id, payload) => {
+export const signDocument = async (id, payload, headers = {}) => {
     try {
-        const signedDocumentResponse = await API.post(`${API_URL}/sign/${id}`, payload);
+        const signedDocumentResponse = await API.post(`${API_URL}/sign/${id}`, payload, { headers });
         return signedDocumentResponse.data;
     }
     catch (error) {

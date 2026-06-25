@@ -17,10 +17,14 @@ import { LogOut,
     from 'lucide-react';
 
 import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import ConfirmationModal from './ConfirmationModal';
+import AccessPromoModal from './AccessPromoModal';
 
 const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [showAccessModal, setShowAccessModal] = useState(false);
 
     const menuItems = [
         { 
@@ -28,7 +32,7 @@ const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
             label: 'Dashboard', 
             path: '/dashboard' 
         },
-        { icon: FileText, label: 'Documents', path: '/documents', roles: ['admin', 'manager', 'employee'] },
+        { icon: FileText, label: 'Documents', path: '/documents', roles: ['admin', 'manager', 'user'] },
         { icon: Upload, label: 'Upload', path: '/upload', roles: ['admin', 'manager'] },
         { icon: Settings, label: 'Settings', path: '/settings' },
     ];
@@ -66,7 +70,13 @@ const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
                     {filteredMenu.map((item, i) => (
                         <button 
                             key={i} 
-                            onClick={() => navigate(item.path)}
+                            onClick={() => {
+                                if (user?.isGuestSigner) {
+                                    setShowAccessModal(true);
+                                } else {
+                                    navigate(item.path);
+                                }
+                            }}
                             title={isCollapsed ? item.label : ''}
                             className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'} py-3 rounded-[5px] transition-all 
                                 ${
@@ -87,6 +97,11 @@ const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
                     ))}
                 </div>
             </nav>
+
+            <AccessPromoModal 
+                isOpen={showAccessModal} 
+                onClose={() => setShowAccessModal(false)} 
+            />
         </aside>
     );
 };

@@ -4,6 +4,13 @@ import { getUserLocal } from '../utils/authUtils';
 const ProtectedRoute = () => {
     // Check if user exists in localStorage
     const user = getUserLocal();
+    
+    // Bypass for passwordless guest signers
+    const query = new URLSearchParams(window.location.search);
+    const token = query.get('token');
+    if (token) {
+        return <Outlet />;
+    }
 
     // If no user found, redirect to login
     if (!user) {

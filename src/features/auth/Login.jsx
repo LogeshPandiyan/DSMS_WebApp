@@ -165,6 +165,13 @@ const Login = () => {
                         )}
                     </button>
                 </form>
+
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                        Don't have an account?{' '}
+                        <Link to="/register" className="text-primary-600 hover:text-primary-500 font-black capitalize transition-colors hover:underline">Register Now</Link>
+                    </p>
+                </div>
             </div>
         </div>
         </div>

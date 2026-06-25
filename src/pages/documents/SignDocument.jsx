@@ -37,25 +37,48 @@ const SignDocument = () => {
     const [sigType, setSigType] = useState('draw'); // 'draw' or 'type'
     const [sigColor, setSigColor] = useState('#000000');
     const [typedName, setTypedName] = useState(currentUser?.name || '');
+    const [isSignedSuccessfully, setIsSignedSuccessfully] = useState(false);
     const sigPad = useRef(null);
 
     useEffect(() => {
+        const query = new URLSearchParams(window.location.search);
+        const token = query.get('token');
+        const email = query.get('email');
+        const headers = {};
+        if (token && email) {
+            headers['x-sign-token'] = token;
+            headers['x-sign-email'] = email;
+        }
+
         const fetchDoc = async () => {
             try {
-                const response = await getDocumentById(id);
+                const response = await getDocumentById(id, headers);
                 setDocument(response.data);
 
                 // If user has a field, jump to that page
-                const userField = response.data.fields?.find(f => (f.user?._id || f.user) === currentUser?._id);
+                const targetEmail = email || currentUser?.email;
+                const userField = response.data.fields?.find(f => {
+                    const fieldUserId = (f.userId || f.user?._id || f.user)?.toString();
+                    const fieldUserEmail = f.user?.email || (response.data.assignedTo?.find(u => (u.userId || u._id || u).toString() === fieldUserId?.toString())?.email);
+                    if (targetEmail && fieldUserEmail?.toLowerCase() === targetEmail.toLowerCase()) {
+                        return true;
+                    }
+                    return fieldUserId === (currentUser?.userId || currentUser?._id)?.toString();
+                });
+
                 if (userField) {
                     setPageNumber(userField.page);
                 }
 
-                // Initialize fieldSignatures from existing signatures if any 
-                // (though usually signing happens in one session)
+                // Initialize fieldSignatures from existing signatures
                 const existingSigs = {};
                 response.data.signatures?.forEach(sig => {
-                    if ((sig.user?._id || sig.user) === currentUser?._id) {
+                    const sigUserId = (sig.userId || sig.user?._id || sig.user)?.toString();
+                    const sigUserEmail = sig.user?.email || (response.data.assignedTo?.find(u => (u.userId || u._id || u).toString() === sigUserId?.toString())?.email);
+                    if (
+                        (targetEmail && sigUserEmail?.toLowerCase() === targetEmail.toLowerCase()) ||
+                        (sigUserId === (currentUser?.userId || currentUser?._id)?.toString())
+                    ) {
                         existingSigs[sig.fieldId] = sig.signatureData;
                     }
                 });
@@ -106,7 +129,7 @@ const SignDocument = () => {
 
         setFieldSignatures(prev => ({
             ...prev,
-            [(selectedField._id || selectedField.id)]: signatureData
+            [(selectedField.fieldId || selectedField._id || selectedField.id)]: signatureData
         }));
         setIsModalOpen(false);
         setSelectedField(null);
@@ -124,19 +147,32 @@ const SignDocument = () => {
 
         // DEBUG: Log to identify ID mismatch
         console.log('=== SIGN DEBUG ===');
-        console.log('currentUser._id:', currentUser?._id);
-        console.log('All fields:', document.fields?.map(f => ({ fieldId: f._id, userId: f.user?._id || f.user })));
+        console.log('currentUser._id:', currentUser?.userId || currentUser?._id);
+        console.log('All fields:', document.fields?.map(f => ({ fieldId: f.fieldId || f._id, userId: f.userId || f.user?._id || f.user })));
         console.log('currentSigs keys:', Object.keys(currentSigs));
 
-        // Validation: Verify ALL fields for this user are signed
-        const myFields = document.fields?.filter(f => 
-            (f.user?._id || f.user)?.toString() === currentUser?._id?.toString()
-        ) || [];
+        const query = new URLSearchParams(window.location.search);
+        const token = query.get('token');
+        const email = query.get('email');
+        const headers = {};
+        if (token && email) {
+            headers['x-sign-token'] = token;
+            headers['x-sign-email'] = email;
+        }
 
-        console.log('myFields found:', myFields.length);
+        // Validation: Verify ALL fields for this user are signed
+        const targetEmail = email || currentUser?.email;
+        const myFields = document.fields?.filter(f => {
+            const fieldUserId = (f.userId || f.user?._id || f.user)?.toString();
+            const fieldUserEmail = f.user?.email || (document.assignedTo?.find(u => (u.userId || u._id || u).toString() === fieldUserId?.toString())?.email);
+            if (targetEmail && fieldUserEmail?.toLowerCase() === targetEmail.toLowerCase()) {
+                return true;
+            }
+            return fieldUserId === (currentUser?.userId || currentUser?._id)?.toString();
+        }) || [];
 
         const unsignedFields = myFields.filter(f => {
-            const fId = (f._id || f.id)?.toString();
+            const fId = (f.fieldId || f._id || f.id)?.toString();
             return !Object.keys(currentSigs).some(k => k.toString() === fId);
         });
 
@@ -158,9 +194,14 @@ const SignDocument = () => {
                 signaturesWithMeta[fId] = typeof data === 'string' ? { dataUrl: data, color: sigColor } : data;
             });
 
-            await signDocument(id, { signatures: signaturesWithMeta });
+            await signDocument(id, { signatures: signaturesWithMeta }, headers);
             toast.success('Document signed successfully!');
-            navigate('/documents');
+            
+            if (token && currentUser?.isGuestSigner) {
+                setIsSignedSuccessfully(true);
+            } else {
+                navigate('/documents');
+            }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to sign document');
         } finally {
@@ -176,6 +217,49 @@ const SignDocument = () => {
         return `${baseUrl}/${finalPath}`;
     };
 
+    if (isSignedSuccessfully) {
+        const query = new URLSearchParams(window.location.search);
+        const email = query.get('email');
+        const targetEmail = email || currentUser?.email;
+        const assignedUser = document?.assignedTo?.find(u => u.email?.trim().toLowerCase() === targetEmail?.trim().toLowerCase());
+        const isRegistered = assignedUser ? !assignedUser.isInvited : false;
+
+        return (
+            <div className="max-w-md mx-auto my-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-8 text-center space-y-6 shadow-xl animate-in zoom-in-95 duration-200">
+                <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-10 w-10" />
+                </div>
+                <h2 className="text-2xl font-sans font-bold text-slate-900 dark:text-white">Document Signed!</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Thank you. Your signature has been securely submitted and processed.
+                </p>
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+                    {isRegistered ? (
+                        <>
+                            <p className="text-xs text-slate-400 font-bold mb-3">You have a registered account. Sign in to view and manage your signed documents.</p>
+                            <button
+                                onClick={() => navigate('/login')}
+                                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-[5px] transition-all shadow-md"
+                            >
+                                Sign In to Workspace
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-xs text-slate-400 font-bold mb-3">Want to manage, track, or request signatures on your own documents?</p>
+                            <button
+                                onClick={() => navigate('/register')}
+                                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-[5px] transition-all shadow-md"
+                            >
+                                Create an Account
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[600px] gap-3">
@@ -185,12 +269,27 @@ const SignDocument = () => {
         );
     }
 
-    const myFields = document.fields?.filter(f =>
-        (f.user?._id || f.user)?.toString() === currentUser?._id?.toString()
-    ) || [];
-    const hasAlreadySigned = document.signatures?.some(s =>
-        (s.user?._id || s.user)?.toString() === currentUser?._id?.toString()
-    );
+    const query = new URLSearchParams(window.location.search);
+    const email = query.get('email');
+    const targetEmail = email || currentUser?.email;
+
+    const myFields = document.fields?.filter(f => {
+        const fieldUserId = (f.userId || f.user?._id || f.user)?.toString();
+        const fieldUserEmail = f.user?.email || (document.assignedTo?.find(u => (u.userId || u._id || u).toString() === fieldUserId?.toString())?.email);
+        if (targetEmail && fieldUserEmail?.toLowerCase() === targetEmail.toLowerCase()) {
+            return true;
+        }
+        return fieldUserId === (currentUser?.userId || currentUser?._id)?.toString();
+    }) || [];
+
+    const hasAlreadySigned = document.signatures?.some(s => {
+        const sigUserId = (s.userId || s.user?._id || s.user)?.toString();
+        const sigUserEmail = s.user?.email || (document.assignedTo?.find(u => (u.userId || u._id || u).toString() === sigUserId?.toString())?.email);
+        if (targetEmail && sigUserEmail?.toLowerCase() === targetEmail.toLowerCase()) {
+            return true;
+        }
+        return sigUserId === (currentUser?.userId || currentUser?._id)?.toString();
+    });
 
     return (
         <div className="max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500 pb-10">
@@ -204,7 +303,7 @@ const SignDocument = () => {
                         <ChevronLeft className="h-5 w-5" />
                     </button>
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{document.title}</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{document.documentTitle || document.title}</h2>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs font-bold text-emerald-600 capitalize tracking-wide flex items-center gap-1.5">
                                 <ShieldCheck className="h-3 w-3" />
@@ -274,13 +373,15 @@ const SignDocument = () => {
                                 />
                             </Document>
 
-                            {/* Signature Fields Overlay */}
-                            {document.fields?.filter(f => f.page === pageNumber).map(field => {
-                                const isMyField = (field.user?._id || field.user)?.toString() === currentUser?._id?.toString();
+                             {document.fields?.filter(f => f.page === pageNumber).map(field => {
+                                const fieldUserId = (field.userId || field.user?._id || field.user)?.toString();
+                                const fieldUserEmail = field.user?.email || (document.assignedTo?.find(u => (u.userId || u._id || u).toString() === fieldUserId?.toString())?.email);
+                                const isMyField = (targetEmail && fieldUserEmail?.toLowerCase() === targetEmail.toLowerCase()) ||
+                                                  ((currentUser?.userId || currentUser?._id) && fieldUserId === (currentUser?.userId || currentUser?._id)?.toString());
 
                                 return (
                                     <div
-                                        key={field._id}
+                                        key={field.fieldId || field._id}
                                         style={{
                                             position: 'absolute',
                                             left: field.x,
@@ -298,13 +399,13 @@ const SignDocument = () => {
                                         <div className={`absolute -top-6 left-0 px-2 py-0.5 rounded-t-[4px] text-[9px] font-black capitalize tracking-wide flex items-center gap-1.5 whitespace-nowrap ${isMyField ? 'bg-primary-600 text-white' : 'bg-slate-400 text-white'
                                             }`}>
                                             <PenTool className="h-2.5 w-2.5" />
-                                            {isMyField ? 'Your Signature Here' : `${field.user?.name || 'Assigned User'}'s Field`}
+                                            {isMyField ? 'Your Signature Here' : `${field.userName || field.user?.name || 'Assigned User'}'s Field`}
                                         </div>
 
-                                        {fieldSignatures[field._id] || fieldSignatures[field.id] ? (
+                                        {fieldSignatures[field.fieldId] || fieldSignatures[field._id] || fieldSignatures[field.id] ? (
                                             <div className="w-full h-full bg-white flex items-center justify-center p-1 rounded-[2px]">
                                                 <img
-                                                    src={fieldSignatures[field._id] || fieldSignatures[field.id]}
+                                                    src={fieldSignatures[field.fieldId] || fieldSignatures[field._id] || fieldSignatures[field.id]}
                                                     alt="Signature"
                                                     className="max-w-full max-h-full object-contain"
                                                 />
@@ -371,14 +472,15 @@ const SignDocument = () => {
                         <h4 className="text-[10px] font-black capitalize tracking-wide text-slate-500">Signing Matrix</h4>
                         <div className="space-y-3">
                             {document.assignedTo.map(signer => {
-                                const isSigner = signer._id === currentUser?._id;
-                                const hasSigned = document.signatures.some(sig => (sig.user?._id || sig.user) === signer._id);
+                                const signerId = signer.userId || signer._id;
+                                const isSigner = signerId === (currentUser?.userId || currentUser?._id) || (targetEmail && signer.email?.toLowerCase() === targetEmail.toLowerCase());
+                                const hasSigned = document.signatures.some(sig => (sig.userId || sig.user?._id || sig.user) === signerId);
                                 return (
-                                    <div key={signer._id} className="flex items-center justify-between">
+                                    <div key={signerId} className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className={`h-2 w-2 rounded-full ${hasSigned ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                                             <span className={`text-xs font-bold ${isSigner ? 'text-primary-600' : 'text-slate-600 dark:text-slate-400'}`}>
-                                                {signer.name} {isSigner && '(You)'}
+                                                {signer.userName || signer.name} {isSigner && '(You)'}
                                             </span>
                                         </div>
                                     </div>

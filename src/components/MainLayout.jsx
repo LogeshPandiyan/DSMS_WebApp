@@ -13,7 +13,7 @@ import { SocketProvider, useSocket } from '../context/SocketContext';
 import NotificationSidebar from './NotificationSidebar'; // Added
 
 const MainLayoutContent = ({ user, setUser, onLogoutClick, isSidebarCollapsed, setIsSidebarCollapsed }) => {
-    const { notifications, unreadCount, markAllAsRead, clearAll } = useSocket();
+    const { notifications, unreadCount, markAllAsRead, clearAll, markAsRead } = useSocket();
     const [isNotificationSidebarOpen, setIsNotificationSidebarOpen] = useState(false);
 
     return (
@@ -34,6 +34,7 @@ const MainLayoutContent = ({ user, setUser, onLogoutClick, isSidebarCollapsed, s
                 notifications={notifications}
                 onMarkAllAsRead={markAllAsRead}
                 onClearAll={clearAll}
+                onMarkAsRead={markAsRead}
             />
 
             {/* Main Content Area */}
@@ -70,6 +71,40 @@ const MainLayout = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const query = new URLSearchParams(window.location.search);
+        const token = query.get('token');
+        const email = query.get('email');
+
+        if (token && email) {
+            const localUser = getUserLocal();
+            if (localUser && localUser.email?.trim().toLowerCase() === email.trim().toLowerCase()) {
+                // Already logged in with matching email. Keep their session!
+                const fetchProfile = async () => {
+                    try {
+                        const data = await getUserProfile();
+                        setUser(data.data);
+                    } catch {
+                        setUser(localUser);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+                fetchProfile();
+                return;
+            }
+
+            const defaultName = email.split('@')[0];
+            const capitalizedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+            setUser({
+                name: capitalizedName,
+                email: email,
+                role: 'user',
+                isGuestSigner: true
+            });
+            setLoading(false);
+            return;
+        }
+
         const fetchProfile = async () => {
             try {
                 const data = await getUserProfile();

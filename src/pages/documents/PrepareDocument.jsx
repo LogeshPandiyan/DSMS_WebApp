@@ -62,7 +62,7 @@ const PrepareDocument = () => {
                 setFields(response.data.fields || []);
 
                 if (response.data.assignedTo?.length > 0) {
-                    setSelectedRecipientId(response.data.assignedTo[0]._id);
+                    setSelectedRecipientId(response.data.assignedTo[0].userId || response.data.assignedTo[0]._id);
                 }
             } catch {
                 toast.error('Failed to load document');
@@ -92,12 +92,12 @@ const PrepareDocument = () => {
         }
 
         const recipient = [docData.uploadedBy, ...(docData.assignedTo || [])]
-            .find(r => r._id === selectedRecipientId);
+            .find(r => (r.userId || r._id || r).toString() === selectedRecipientId.toString());
 
         const newField = {
             id: Date.now().toString(), // Temp ID for UI tracking
-            user: recipient._id,
-            userName: recipient.name,
+            user: recipient.userId || recipient._id,
+            userName: recipient.userName || recipient.name,
             userRole: recipient.role,
             type: 'signature',
             page: pageNumber,
@@ -112,12 +112,12 @@ const PrepareDocument = () => {
     };
 
     const removeField = (fieldId) => {
-        setFields(fields.filter(f => f.id !== fieldId && f._id !== fieldId));
+        setFields(fields.filter(f => f.id !== fieldId && f.fieldId !== fieldId && f._id !== fieldId));
     };
 
     const updateFieldPosition = (fieldId, d) => {
         setFields(fields.map(f => {
-            if (f.id === fieldId || f._id === fieldId) {
+            if (f.id === fieldId || f.fieldId === fieldId || f._id === fieldId) {
                 return { ...f, x: d.x, y: d.y };
             }
             return f;
@@ -126,7 +126,7 @@ const PrepareDocument = () => {
 
     const updateFieldSize = (fieldId, ref) => {
         setFields(fields.map(f => {
-            if (f.id === fieldId || f._id === fieldId) {
+            if (f.id === fieldId || f.fieldId === fieldId || f._id === fieldId) {
                 return {
                     ...f,
                     width: parseInt(ref.style.width),
@@ -167,13 +167,13 @@ const PrepareDocument = () => {
 
     const changeFieldRecipient = (fieldId, recipient) => {
         setFields(fields.map(f => {
-            if (f.id === fieldId || f._id === fieldId) {
-                return { ...f, user: recipient._id, userName: recipient.name, userRole: recipient.role };
+            if (f.id === fieldId || f.fieldId === fieldId || f._id === fieldId) {
+                return { ...f, user: recipient.userId || recipient._id, userName: recipient.userName || recipient.name, userRole: recipient.role };
             }
             return f;
         }));
         setShowRecipientPicker(false);
-        toast.success(`Recipient changed to ${recipient.name}`);
+        toast.success(`Recipient changed to ${recipient.userName || recipient.name}`);
     };
 
     const handleSave = () => {
@@ -188,7 +188,7 @@ const PrepareDocument = () => {
         try {
             // Clean up fields before saving
             const fieldsToSave = fields.map(f => ({
-                user: f.user,
+                user: f.userId || f.user,
                 type: f.type,
                 page: f.page,
                 x: f.x,
@@ -230,7 +230,7 @@ const PrepareDocument = () => {
                 return isSelected 
                     ? 'bg-blue-500/20 border-blue-500 shadow-xl ring-4 ring-blue-500/10' 
                     : 'bg-blue-500/10 border-blue-500 hover:bg-blue-500/20';
-            case 'employee':
+            case 'user':
                 return isSelected 
                     ? 'bg-emerald-500/20 border-emerald-500 shadow-xl ring-4 ring-emerald-500/10' 
                     : 'bg-emerald-500/10 border-emerald-500 hover:bg-emerald-500/20';
@@ -245,7 +245,7 @@ const PrepareDocument = () => {
         switch (role) {
             case 'admin': return 'bg-amber-600';
             case 'manager': return 'bg-blue-600';
-            case 'employee': return 'bg-emerald-600';
+            case 'user': return 'bg-emerald-600';
             default: return 'bg-primary-600';
         }
     };
@@ -271,7 +271,7 @@ const PrepareDocument = () => {
                         <ChevronLeft className="h-5 w-5" />
                     </button>
                     <div>
-                        <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Title: {docData.title}</h2>
+                        <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Title: {docData.documentTitle || docData.title}</h2>
                         <p className="text-[10px] text-slate-400 font-bold capitalize tracking-wide">Step 2: Place signature fields</p>
                     </div>
                 </div>
@@ -341,17 +341,17 @@ const PrepareDocument = () => {
                                 .filter(f => f.page === pageNumber)
                                 .map(field => (
                                     <Rnd
-                                        key={field.id || field._id}
+                                        key={field.fieldId || field.id || field._id}
                                         size={{ width: field.width, height: field.height }}
                                         position={{ x: field.x, y: field.y }}
-                                        onDragStop={(e, d) => updateFieldPosition(field.id || field._id, d)}
-                                        onResizeStop={(e, direction, ref) => updateFieldSize(field.id || field._id, ref)}
+                                        onDragStop={(e, d) => updateFieldPosition(field.fieldId || field.id || field._id, d)}
+                                        onResizeStop={(e, direction, ref) => updateFieldSize(field.fieldId || field.id || field._id, ref)}
                                         bounds="parent"
                                         className="z-50"
                                     >
                                         <div
-                                            onClick={(e) => { e.stopPropagation(); setSelectedFieldId(field.id || field._id); }}
-                                            className={`w-full h-full rounded-[4px] relative group backdrop-blur-[1px] transition-all border-2 ${getFieldColors(field.userRole, selectedFieldId === (field.id || field._id))}`}
+                                            onClick={(e) => { e.stopPropagation(); setSelectedFieldId(field.fieldId || field.id || field._id); }}
+                                            className={`w-full h-full rounded-[4px] relative group backdrop-blur-[1px] transition-all border-2 ${getFieldColors(field.userRole, selectedFieldId === (field.fieldId || field.id || field._id))}`}
                                         >
                                             <div className={`absolute -top-6 left-0 text-white text-[9px] font-black px-2 py-0.5 rounded-t-[4px] capitalize tracking-wide flex items-center gap-1.5 whitespace-nowrap ${getHeaderColors(field.userRole)}`}>
                                                 <PenTool className="h-2.5 w-2.5" />
@@ -359,7 +359,7 @@ const PrepareDocument = () => {
                                             </div>
 
                                             {/* Floating Toolbar - Visible when selected */}
-                                            {selectedFieldId === (field.id || field._id) && (
+                                            {selectedFieldId === (field.fieldId || field.id || field._id) && (
                                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-[100] flex items-center gap-1 p-1 bg-slate-900 border border-slate-800 rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); 
@@ -405,7 +405,7 @@ const PrepareDocument = () => {
                                                     <div className="w-px h-4 bg-slate-800 mx-0.5"></div>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); 
-                                                            removeField(field.id || field._id); 
+                                                            removeField(field.fieldId || field.id || field._id); 
                                                             setSelectedFieldId(null); 
                                                         }}
                                                         className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-red-900/40 text-slate-400 hover:text-red-400 transition-all group/tooltip relative"
@@ -469,17 +469,17 @@ const PrepareDocument = () => {
                                         <div className="px-3 py-2">
                                             <p className="text-[10px] font-black capitalize tracking-wide text-slate-400 mb-2">Signers</p>
                                         </div>
-                                        {/* Deduplicated signers: uploadedBy + assignedTo, unique by _id */}
+                                        {/* Deduplicated signers: uploadedBy + assignedTo, unique by userId/id */}
                                         {[docData.uploadedBy, ...(docData.assignedTo || [])]
                                             .filter(Boolean)
-                                            .filter((s, i, arr) => arr.findIndex(x => x._id === s._id) === i)
+                                            .filter((s, i, arr) => arr.findIndex(x => (x.userId || x._id || x).toString() === (s.userId || s._id || s).toString()) === i)
                                             .map((signer, idx) => {
-                                            const currentField = fields.find(f => f.id === selectedFieldId || f._id === selectedFieldId);
-                                            const isSelected = (signer?._id || signer) === currentField?.user;
+                                            const currentField = fields.find(f => f.id === selectedFieldId || f.fieldId === selectedFieldId || f._id === selectedFieldId);
+                                            const isSelected = (signer?.userId || signer?._id || signer).toString() === (currentField?.userId || currentField?.user || '').toString();
 
                                             return (
                                                 <button
-                                                    key={signer._id || idx}
+                                                    key={signer.userId || signer._id || idx}
                                                     onClick={() => changeFieldRecipient(selectedFieldId, signer)}
                                                     className={`w-full text-left px-3 py-3 rounded-lg flex items-center justify-between transition-all ${isSelected
                                                         ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600'
@@ -487,7 +487,7 @@ const PrepareDocument = () => {
                                                         }`}
                                                 >
                                                     <div className="flex flex-col">
-                                                        <span className="text-xs font-bold">{signer.name}</span>
+                                                        <span className="text-xs font-bold">{signer.userName || signer.name}</span>
                                                         <span className="text-[10px] opacity-70">{signer.email}</span>
                                                     </div>
                                                     {isSelected && <CheckCircle2 className="h-4 w-4" />}
@@ -525,35 +525,35 @@ const PrepareDocument = () => {
                                         className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all hover:border-slate-300 dark:hover:border-slate-600 shadow-sm"
                                     >
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => u._id === selectedRecipientId)?.role === 'admin' ? 'bg-amber-500' : [docData.uploadedBy, ...(docData.assignedTo || [])].find(u => u._id === selectedRecipientId)?.role === 'manager' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                                            <span className="truncate">{[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => u._id === selectedRecipientId)?.name || 'Select Signer'}</span>
+                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.role === 'admin' ? 'bg-amber-500' : [docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.role === 'manager' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                                            <span className="truncate">{[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.userName || [docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.name || 'Select Signer'}</span>
                                         </div>
-                                        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${recipientDropdownOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-205 ${recipientDropdownOpen ? 'rotate-180' : ''}`} />
                                     </button>
 
                                     {recipientDropdownOpen && (
                                         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-[100] p-1 animate-in fade-in slide-in-from-top-1 duration-200">
                                             {[docData.uploadedBy, ...(docData.assignedTo || [])]
                                                 .filter(Boolean)
-                                                .filter((s, i, arr) => arr.findIndex(x => x._id === s._id) === i)
+                                                .filter((s, i, arr) => arr.findIndex(x => (x.userId || x._id || x).toString() === (s.userId || s._id || s).toString()) === i)
                                                 .map(user => (
                                                     <button
-                                                        key={user._id}
+                                                        key={user.userId || user._id}
                                                         type="button"
                                                         onClick={() => {
-                                                            setSelectedRecipientId(user._id);
+                                                            setSelectedRecipientId(user.userId || user._id);
                                                             setRecipientDropdownOpen(false);
                                                         }}
                                                         className={`w-full px-4 py-2.5 text-left text-[11px] font-bold flex items-center justify-between transition-colors rounded-[4px]
-                                                            ${selectedRecipientId === user._id 
+                                                            ${selectedRecipientId === (user.userId || user._id) 
                                                                 ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white' 
                                                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className={`h-2 w-2 rounded-full ${user.role === 'admin' ? 'bg-amber-500' : user.role === 'manager' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                                                            <span>{user.name}</span>
+                                                            <span>{user.userName || user.name}</span>
                                                         </div>
-                                                        {selectedRecipientId === user._id && <Check className="h-3.5 w-3.5" />}
+                                                        {selectedRecipientId === (user.userId || user._id) && <Check className="h-3.5 w-3.5" />}
                                                     </button>
                                                 ))}
                                         </div>
@@ -595,7 +595,7 @@ const PrepareDocument = () => {
 
                         <div className="space-y-3">
                             {fields.map((field, idx) => (
-                                <div key={field.id || field._id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-[5px] border border-slate-200 dark:border-slate-800 group">
+                                <div key={field.fieldId || field.id || field._id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-[5px] border border-slate-200 dark:border-slate-800 group">
                                     <div className="flex items-center gap-3">
                                         <span className="text-[10px] font-black text-slate-400">
                                             #{idx + 1}</span>
@@ -612,7 +612,7 @@ const PrepareDocument = () => {
                                     </div>
 
                                     <button
-                                        onClick={() => removeField(field.id || field._id)}
+                                        onClick={() => removeField(field.fieldId || field.id || field._id)}
                                         className="h-7 w-7 rounded-[4px] text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
                                     >
                                         <Trash2 className="h-3.5 w-3.5" />

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { toast } from 'sonner';
-import { getNotifications, markNotificationsAsRead, clearAllNotifications } from '../services/dashboardService';
+import { getNotifications, markNotificationsAsRead, clearAllNotifications, markNotificationAsRead } from '../services/dashboardService';
 
 const SocketContext = createContext();
 
@@ -26,7 +26,8 @@ export const SocketProvider = ({ children, user }) => {
                         message: n.message,
                         type: n.type,
                         read: n.read,
-                        time: n.createdAt
+                        time: n.createdAt,
+                        metadata: n.metadata
                     }));
                     setNotifications(mapped);
                     setUnreadCount(mapped.filter(n => !n.read).length);
@@ -108,8 +109,23 @@ export const SocketProvider = ({ children, user }) => {
         setUnreadCount(0);
     };
 
+    const markAsRead = async (id) => {
+        setNotifications(prev => {
+            const wasUnread = prev.find(n => n.id === id && !n.read);
+            if (wasUnread) {
+                setUnreadCount(c => Math.max(0, c - 1));
+            }
+            return prev.map(n => n.id === id ? { ...n, read: true } : n);
+        });
+        try {
+            await markNotificationAsRead(id);
+        } catch {
+            // Silent fail
+        }
+    };
+
     return (
-        <SocketContext.Provider value={{ socket, notifications, unreadCount, markAllAsRead, clearAll }}>
+        <SocketContext.Provider value={{ socket, notifications, unreadCount, markAllAsRead, clearAll, markAsRead }}>
             {children}
         </SocketContext.Provider>
     );
