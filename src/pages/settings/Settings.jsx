@@ -239,11 +239,11 @@ const Settings = () => {
     }
 
     const tabs = [
-        { id: 'profile', label: 'Profile', icon: User, roles: ['admin', 'manager', 'user'] },
-        { id: 'portal-user', label: 'Portal user', icon: Users, roles: ['admin', 'manager'] },
-        { id: 'signature', label: 'Signature', icon: PenTool, roles: ['admin', 'manager', 'user'] },
-        { id: 'notifications', label: 'Notifications', icon: Bell, roles: ['admin', 'manager', 'user'] },
-        { id: 'security', label: 'Security', icon: Shield, roles: ['admin', 'manager', 'user'] },
+        { id: 'profile', label: 'Profile', icon: User, roles: ['admin', 'user'] },
+        { id: 'portal-user', label: 'Portal user', icon: Users, roles: ['admin'] },
+        { id: 'signature', label: 'Signature', icon: PenTool, roles: ['admin', 'user'] },
+        { id: 'notifications', label: 'Notifications', icon: Bell, roles: ['admin', 'user'] },
+        { id: 'security', label: 'Security', icon: Shield, roles: ['admin', 'user'] },
     ].filter(tab => tab.roles.includes(userData?.role));
 
     const isValidTab = tabs.some(tab => tab.id === activeTab);

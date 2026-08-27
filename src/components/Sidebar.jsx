@@ -32,8 +32,8 @@ const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
             label: 'Dashboard', 
             path: '/dashboard' 
         },
-        { icon: FileText, label: 'Documents', path: '/documents', roles: ['admin', 'manager', 'user'] },
-        { icon: Upload, label: 'Upload', path: '/upload', roles: ['admin', 'manager'] },
+        { icon: FileText, label: 'Documents', path: '/documents', roles: ['admin', 'user'] },
+        { icon: Upload, label: 'Upload', path: '/upload', roles: ['admin'] },
         { icon: Settings, label: 'Settings', path: '/settings' },
     ];
 

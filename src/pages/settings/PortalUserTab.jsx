@@ -123,10 +123,10 @@ const PortalUserTab = ({ currentUser }) => {
         switch (role?.toLowerCase()) {
             case 'admin':
                 return 'bg-rose-500/10 text-rose-600 border-rose-500/20';
-            case 'manager':
-                return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
             case 'user':
                 return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+            case 'guest':
+                return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
             default:
                 return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
         }
@@ -136,10 +136,10 @@ const PortalUserTab = ({ currentUser }) => {
         switch (role?.toLowerCase()) {
             case 'admin':
                 return <ShieldAlert className="h-3.5 w-3.5" />;
-            case 'manager':
-                return <Briefcase className="h-3.5 w-3.5" />;
             case 'user':
                 return <UserCircle className="h-3.5 w-3.5" />;
+            case 'guest':
+                return <Briefcase className="h-3.5 w-3.5" />;
             default:
                 return <Shield className="h-3.5 w-3.5" />;
         }
@@ -260,8 +260,8 @@ const PortalUserTab = ({ currentUser }) => {
                                 <div className="space-y-2">
                                     {[
                                         { label: 'Administrators', value: users.filter(u => u.role === 'admin').length, icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-500/10' },
-                                        { label: 'Managers', value: users.filter(u => u.role === 'manager').length, icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-500/10' },
-                                        { label: 'Users', value: users.filter(u => u.role === 'user').length, icon: UserCircle, color: 'text-blue-600', bg: 'bg-blue-500/10' },
+                                        { label: 'Registered Users', value: users.filter(u => u.role === 'user').length, icon: UserCircle, color: 'text-blue-600', bg: 'bg-blue-500/10' },
+                                        { label: 'Guest Signers', value: users.filter(u => u.role === 'guest').length, icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-500/10' },
                                         { label: 'Total users', value: users.length, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-500/10' }
                                     ].map((stat, i) => (
                                         <div key={i} className="flex items-center justify-between p-2 rounded-[5px] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
@@ -369,7 +369,7 @@ const PortalUserTab = ({ currentUser }) => {
                                                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                                                             <p className="text-[10px] font-medium text-slate-400 tracking-widest">Modify access</p>
                                                         </div>
-                                                        {['admin', 'manager', 'user'].map(role => (
+                                                        {['admin', 'user'].map(role => (
                                                             <button
                                                                 key={role}
                                                                 onClick={() => handleRoleChange(user, role)}

@@ -97,10 +97,10 @@ const UserManagement = () => {
         switch (role?.toLowerCase()) {
             case 'admin':
                 return 'bg-rose-500/10 text-rose-600 border-rose-500/20';
-            case 'manager':
-                return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
             case 'user':
                 return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+            case 'guest':
+                return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
             default:
                 return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
         }
@@ -110,10 +110,10 @@ const UserManagement = () => {
         switch (role?.toLowerCase()) {
             case 'admin':
                 return <ShieldAlert className="h-3.5 w-3.5" />;
-            case 'manager':
-                return <Briefcase className="h-3.5 w-3.5" />;
             case 'user':
                 return <UserCircle className="h-3.5 w-3.5" />;
+            case 'guest':
+                return <Briefcase className="h-3.5 w-3.5" />;
             default:
                 return <Shield className="h-3.5 w-3.5" />;
         }
@@ -148,7 +148,7 @@ const UserManagement = () => {
                 {[
                     { label: 'Total Users', value: users.length, icon: Users, color: 'text-primary-600', bg: 'bg-primary-500/10' },
                     { label: 'Administrators', value: users.filter(u => u.role === 'admin').length, icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-500/10' },
-                    { label: 'Managers', value: users.filter(u => u.role === 'manager').length, icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-500/10' }
+                    { label: 'Standard Users', value: users.filter(u => u.role === 'user').length, icon: UserCircle, color: 'text-emerald-600', bg: 'bg-emerald-500/10' }
                 ].map((stat, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[5px] shadow-sm flex items-center justify-between">
                         <div>
@@ -221,7 +221,7 @@ const UserManagement = () => {
                                                         <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
                                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modify Access</p>
                                                         </div>
-                                                        {['admin', 'manager', 'user'].map(role => (
+                                                        {['admin', 'user'].map(role => (
                                                             <button
                                                                 key={role}
                                                                 onClick={() => handleRoleChange(user, role)}

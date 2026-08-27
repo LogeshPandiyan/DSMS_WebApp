@@ -111,7 +111,7 @@ const UploadDocument = () => {
             }
         };
 
-        if (currentUser?.role === 'admin' || currentUser?.role === 'manager') {
+        if (currentUser?.role === 'admin') {
             fetchSigners();
         } else if (currentUser) {
             navigate('/dashboard');
@@ -410,7 +410,7 @@ const UploadDocument = () => {
                                                         </div>
 
                                                         <div className="max-h-72 overflow-y-auto custom-scrollbar">
-                                                            {['admin', 'manager', 'user'].map(role => {
+                                                            {['admin', 'user'].map(role => {
                                                                 const usersInRole = availableSigners.filter(u => 
                                                                     u.role === role && 
                                                                     (u.name.toLowerCase().includes(signerSearch.toLowerCase()) || 
@@ -465,18 +465,12 @@ const UploadDocument = () => {
                                     )}
                                 </div>
 
-                                {/* Row 2: Select Managers (Left) & Select Users (Right) (Only if roles mode!) */}
+                                {/* Row 2: Select Users (Only if roles mode!) */}
                                 {assignmentMode === 'roles' && (
-                                    <>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Managers</label>
-                                            {renderRoleDropdown('manager', Briefcase, 'Managers')}
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Users</label>
-                                            {renderRoleDropdown('user', Users, 'Users')}
-                                        </div>
-                                    </>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Users</label>
+                                        {renderRoleDropdown('user', Users, 'Users')}
+                                    </div>
                                 )}
                             </div>
 

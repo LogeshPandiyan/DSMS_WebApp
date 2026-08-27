@@ -73,10 +73,12 @@ export const SocketProvider = ({ children, user }) => {
                 setUnreadCount(prev => prev + 1);
 
                 // Show real-time toast notification
-                toast.success(data.title, {
-                    description: data.message,
-                    duration: 5000,
-                });
+                if (data.type !== 'DOCUMENT_SIGNED' && data.type !== 'DOCUMENT_ASSIGNED') {
+                    toast.success(data.title, {
+                        description: data.message,
+                        duration: 5000,
+                    });
+                }
             });
 
             setSocket(socketInstance);

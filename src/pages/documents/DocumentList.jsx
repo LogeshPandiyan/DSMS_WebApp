@@ -4,11 +4,12 @@ import { getDocuments, deleteDocument } from '../../services/documentService';
 import {
     FileText, Clock, CheckCircle2, MoreVertical, Eye, Download, Trash2, Plus,
     ChevronLeft, ChevronRight, ChevronDown, User, Calendar, PenTool, Layout,
-    Inbox, FileCheck2, FileEdit, X, Shield, Monitor, MapPin
+    Inbox, FileCheck2, FileEdit, X, Shield, Monitor, MapPin, Fingerprint
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchBar from '../../components/SearchBar';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import { getUserLocal } from '../../utils/authUtils';
 
 const DocumentList = () => {
     const [documents, setDocuments] = useState([]);
@@ -44,7 +45,12 @@ const DocumentList = () => {
     const [limit, setLimit] = useState(10);
 
     const fetchDocs = useCallback(async (page = 1, currentLimit = limit) => {
-            setLoading(true);
+        const localUser = getUserLocal();
+        if (!localUser) {
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
         try {
             const response = await getDocuments({
                 status: statusFilter,
@@ -131,7 +137,7 @@ const DocumentList = () => {
         { label: 'Pending', status: 'pending', icon: Clock, count: tabCounts.pending },
         { label: 'Waiting for Others', status: 'wfo', icon: User, count: tabCounts.wfo },
         { label: 'Completed', status: 'signed', icon: FileCheck2, count: tabCounts.signed },
-        { label: 'Drafts', status: 'draft', icon: FileEdit, count: tabCounts.draft, roles: ['admin', 'manager'] }
+        { label: 'Drafts', status: 'draft', icon: FileEdit, count: tabCounts.draft, roles: ['admin'] }
     ].filter(tab => !tab.roles || tab.roles.includes(currentUser?.role?.toLowerCase()));
 
     const activeOption = filterOptions.find(opt => opt.status === statusFilter) || filterOptions[0];
@@ -210,7 +216,7 @@ const DocumentList = () => {
                         placeholder="Search documents..."
                         className="w-72"
                     />
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && (
+                    {currentUser?.role === 'admin' && (
                         <button
                             onClick={() => navigate('/upload')}
                             className="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2.5 rounded-[5px] font-bold text-sm transition-all flex items-center justify-center gap-3.5
@@ -626,6 +632,14 @@ const DocumentList = () => {
                                                     />
                                                     <span className="text-[11px] text-slate-600 dark:text-slate-350 font-bold capitalize">{inkName}</span>
                                                 </div>
+
+                                                {/* Document Name */}
+                                                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-1">
+                                                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Document Name</p>
+                                                    <p className="text-slate-800 dark:text-slate-200 font-bold text-xs break-words">
+                                                        {selectedDocDetails.documentTitle || selectedDocDetails.title}
+                                                    </p>
+                                                </div>
                                             </div>
 
                                             {/* Right Column: Metadata Proofs */}
@@ -664,6 +678,43 @@ const DocumentList = () => {
                                                         </p>
                                                     </div>
                                                 </div>
+
+                                                {/* Signature Type */}
+                                                <div className="flex items-center gap-2.5">
+                                                    <FileCheck2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                                    <div>
+                                                        <p className="text-[10px] text-slate-400 font-bold">Signature type</p>
+                                                        <p className="text-slate-800 dark:text-slate-200 font-bold">
+                                                            Electronic signature (e-Signature)
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Signature ID */}
+                                                {sig.signatureId && (
+                                                    <div className="flex items-center gap-2.5">
+                                                        <Fingerprint className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                                        <div>
+                                                            <p className="text-[10px] text-slate-400 font-bold">Signature ID</p>
+                                                            <p className="text-slate-800 dark:text-slate-200 font-mono text-[10.5px] font-bold break-all">
+                                                                {sig.signatureId}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Document ID */}
+                                                {selectedDocDetails.documentId && (
+                                                    <div className="flex items-center gap-2.5">
+                                                        <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                                        <div>
+                                                            <p className="text-[10px] text-slate-400 font-bold">Document ID</p>
+                                                            <p className="text-slate-800 dark:text-slate-200 font-mono text-[10.5px] font-bold break-all">
+                                                                {selectedDocDetails.documentId}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
                                         </div>

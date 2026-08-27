@@ -3,6 +3,7 @@ import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { Document, Page, pdfjs } from 'react-pdf';
 import SignatureCanvas from 'react-signature-canvas';
 import { getDocumentById, signDocument } from '../../services/documentService';
+import { getUserLocal } from '../../utils/authUtils';
 import {
     PenTool,
     RotateCcw,
@@ -44,6 +45,14 @@ const SignDocument = () => {
         const query = new URLSearchParams(window.location.search);
         const token = query.get('token');
         const email = query.get('email');
+        const localUser = getUserLocal();
+
+        if (!token && !email && !localUser && !currentUser) {
+            setLoading(false);
+            navigate('/login');
+            return;
+        }
+
         const headers = {};
         if (token && email) {
             headers['x-sign-token'] = token;

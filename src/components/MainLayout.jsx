@@ -74,6 +74,13 @@ const MainLayout = () => {
         const query = new URLSearchParams(window.location.search);
         const token = query.get('token');
         const email = query.get('email');
+        const localUser = getUserLocal();
+
+        if (!token && !email && !localUser) {
+            setLoading(false);
+            navigate('/login');
+            return;
+        }
 
         if (token && email) {
             const localUser = getUserLocal();

@@ -11,7 +11,6 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
 
     const roleOptions = [
         { label: 'User', value: 'user' },
-        { label: 'Manager', value: 'manager' },
         { label: 'Admin', value: 'admin' }
     ];
 

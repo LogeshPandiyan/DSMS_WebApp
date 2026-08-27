@@ -226,7 +226,7 @@ const PrepareDocument = () => {
                 return isSelected 
                     ? 'bg-amber-500/20 border-amber-500 shadow-xl ring-4 ring-amber-500/10' 
                     : 'bg-amber-500/10 border-amber-500 hover:bg-amber-500/20';
-            case 'manager':
+            case 'guest':
                 return isSelected 
                     ? 'bg-blue-500/20 border-blue-500 shadow-xl ring-4 ring-blue-500/10' 
                     : 'bg-blue-500/10 border-blue-500 hover:bg-blue-500/20';
@@ -244,7 +244,7 @@ const PrepareDocument = () => {
     const getHeaderColors = (role) => {
         switch (role) {
             case 'admin': return 'bg-amber-600';
-            case 'manager': return 'bg-blue-600';
+            case 'guest': return 'bg-blue-600';
             case 'user': return 'bg-emerald-600';
             default: return 'bg-primary-600';
         }
@@ -423,14 +423,14 @@ const PrepareDocument = () => {
                                             <div className="w-full h-full flex flex-col items-center justify-center gap-1 opacity-50">
                                                 <PenTool className={`h-6 w-6 ${field.userRole === 'admin' ? 
                                                     'text-amber-500' : 
-                                                    field.userRole === 'manager' ? 
+                                                    field.userRole === 'guest' ? 
                                                     'text-blue-500' : 
                                                     'text-emerald-500'}`} 
                                                     />
                                                 <span className={`text-[10px] font-bold capitalize 
                                                     ${field.userRole === 'admin' ? 
                                                     'text-amber-600' : 
-                                                    field.userRole === 'manager' ? 
+                                                    field.userRole === 'guest' ? 
                                                     'text-blue-600' : 
                                                     'text-emerald-600'}`}>
                                                         Signature
@@ -525,7 +525,7 @@ const PrepareDocument = () => {
                                         className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[5px] px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all hover:border-slate-300 dark:hover:border-slate-600 shadow-sm"
                                     >
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.role === 'admin' ? 'bg-amber-500' : [docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.role === 'manager' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.role === 'admin' ? 'bg-amber-500' : [docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.role === 'guest' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
                                             <span className="truncate">{[docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.userName || [docData.uploadedBy, ...(docData.assignedTo || [])].find(u => (u.userId || u._id || u).toString() === selectedRecipientId.toString())?.name || 'Select Signer'}</span>
                                         </div>
                                         <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-205 ${recipientDropdownOpen ? 'rotate-180' : ''}`} />
@@ -535,14 +535,14 @@ const PrepareDocument = () => {
                                         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-[100] p-1 animate-in fade-in slide-in-from-top-1 duration-200">
                                             {[docData.uploadedBy, ...(docData.assignedTo || [])]
                                                 .filter(Boolean)
-                                                .filter((s, i, arr) => arr.findIndex(x => (x.userId || x._id || x).toString() === (s.userId || s._id || s).toString()) === i)
+                                                .filter((s, i, arr) => arr.findIndex(x => (x.userId || x._id || x).toString() === (s.userId || x._id || s).toString()) === i)
                                                 .map(user => (
                                                     <button
                                                         key={user.userId || user._id}
                                                         type="button"
                                                         onClick={() => {
-                                                            setSelectedRecipientId(user.userId || user._id);
-                                                            setRecipientDropdownOpen(false);
+                                                             setSelectedRecipientId(user.userId || user._id);
+                                                             setRecipientDropdownOpen(false);
                                                         }}
                                                         className={`w-full px-4 py-2.5 text-left text-[11px] font-bold flex items-center justify-between transition-colors rounded-[4px]
                                                             ${selectedRecipientId === (user.userId || user._id) 
@@ -550,7 +550,7 @@ const PrepareDocument = () => {
                                                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
                                                     >
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`h-2 w-2 rounded-full ${user.role === 'admin' ? 'bg-amber-500' : user.role === 'manager' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                                                            <div className={`h-2 w-2 rounded-full ${user.role === 'admin' ? 'bg-amber-500' : user.role === 'guest' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
                                                             <span>{user.userName || user.name}</span>
                                                         </div>
                                                         {selectedRecipientId === (user.userId || user._id) && <Check className="h-3.5 w-3.5" />}
