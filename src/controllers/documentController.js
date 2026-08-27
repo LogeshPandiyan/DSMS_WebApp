@@ -68,7 +68,7 @@ const uploadDocument = async (req, res) => {
                     user = await User.create({
                         name: capitalizedName,
                         email,
-                        role: 'user',
+                        role: 'guest',
                         isInvited: true, // Bypass password validation
                         isActive: true
                     });
@@ -134,12 +134,12 @@ const getDocumentCounts = async (req, res) => {
         const counts = {
             all: 0,
             pending: 0,
-            signed: 0,
+            signed: 0,  
             wfo: 0,
             draft: 0
         };
 
-        if (req.user.role === 'admin' || req.user.role === 'manager') {
+        if (req.user.role === 'admin') {
             counts.all = await Document.countDocuments({});
             counts.pending = await Document.countDocuments({ status: 'pending' });
             counts.signed = await Document.countDocuments({ status: 'signed' });
@@ -180,8 +180,8 @@ const getDocuments = async (req, res) => {
         const userRole = req.user.role?.toLowerCase();
 
         // Role-based filtering
-        if (userRole === 'admin' || userRole === 'manager') {
-            query = {}; // Admin/Manager sees all
+        if (userRole === 'admin') {
+            query = {}; // Admin sees all
         }
         else if (userRole === 'user') {
             query = { assignedTo: req.user._id, status: { $ne: 'draft' } };
@@ -231,13 +231,13 @@ const getDocuments = async (req, res) => {
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(Number(limit)),
-            userRole === 'admin' || userRole === 'manager'
+            userRole === 'admin'
                 ? Document.countDocuments(query.$or ? { $or: query.$or } : {})
                 : Document.countDocuments({ ...countBaseQuery, status: { $ne: 'draft' } }),
             Document.countDocuments({ ...countBaseQuery, status: 'pending' }),
             Document.countDocuments({ ...countBaseQuery, status: 'signed' }),
             Document.countDocuments({ ...countBaseQuery, status: 'partially_signed' }),
-            userRole === 'admin' || userRole === 'manager'
+            userRole === 'admin'
                 ? Document.countDocuments({ ...countBaseQuery, status: 'draft' })
                 : Promise.resolve(0)
         ]);

@@ -42,7 +42,7 @@ const getUserProfile = async (req, res) => {
 // Get dashboard statistics
 const getDashboardStats = async (req, res) => {
     try {
-        const isAdmin = req.user.role === 'admin' || req.user.role === 'manager';
+        const isAdmin = req.user.role === 'admin';
         const userId = req.user._id;
 
         // Basic Stats

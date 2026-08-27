@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const generateToken = require("../utils/tokenUtils");
 const { createAuditLog } = require("../utils/auditLogger");
+const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 // Register a new user // @access  Public
@@ -23,8 +24,35 @@ const registerUser = async (req, res) => {
       if (userExists.isInvited && !userExists.password) {
         userExists.name = name;
         userExists.password = password;
+        userExists.role = "user";
         userExists.isInvited = false;
         await userExists.save();
+
+        // Send Welcome Greeting Email asynchronously
+        sendEmail({
+          email: userExists.email,
+          subject: "🎉 Welcome to DSMS - Digital Signature Management System",
+          message: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+              <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 30px 20px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">DSMS</h1>
+                <p style="color: #ccfbf1; margin: 6px 0 0 0; font-size: 14px;">Digital Signature Management System</p>
+              </div>
+              <div style="padding: 36px 28px;">
+                <h2 style="color: #1e293b; margin-top: 0; font-size: 20px;">Welcome aboard, ${userExists.name}! 👋</h2>
+                <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 8px;">
+                  Thank you for joining <strong>DSMS</strong>. Your account has been created successfully.
+                </p>
+                <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 0;">
+                  We are excited to have you with us! If you have any questions or need assistance, feel free to reach out to your system administrator.
+                </p>
+              </div>
+              <div style="background-color: #f1f5f9; padding: 16px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0;">
+                &copy; ${new Date().getFullYear()} DSMS Web App. Safe & Secure E-Signatures.
+              </div>
+            </div>
+          `,
+        }).catch((err) => console.error("Welcome email error:", err.message));
 
         return res.status(201).json({
           success: true,
@@ -55,6 +83,32 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+      // Send Welcome Greeting Email asynchronously
+      sendEmail({
+        email: user.email,
+        subject: "🎉 Welcome to DSMS - Digital Signature Management System",
+        message: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); padding: 30px 20px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">DSMS</h1>
+              <p style="color: #ccfbf1; margin: 6px 0 0 0; font-size: 14px;">Digital Signature Management System</p>
+            </div>
+            <div style="padding: 36px 28px;">
+              <h2 style="color: #1e293b; margin-top: 0; font-size: 20px;">Welcome aboard, ${user.name}! 👋</h2>
+              <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 8px;">
+                Thank you for joining <strong>DSMS</strong>. Your account has been created successfully.
+              </p>
+              <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 0;">
+                We are excited to have you with us! If you have any questions or need assistance, feel free to reach out to your system administrator.
+              </p>
+            </div>
+            <div style="background-color: #f1f5f9; padding: 16px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0;">
+              &copy; ${new Date().getFullYear()} DSMS Web App. Safe & Secure E-Signatures.
+            </div>
+          </div>
+        `,
+      }).catch((err) => console.error("Welcome email error:", err.message));
+
       res.status(201).json({
         success: true,
         statusCode: 201,
@@ -142,8 +196,6 @@ const loginUser = async (req, res) => {
     });
   }
 };
-
-const sendEmail = require("../utils/sendEmail");
 
 // Forgot Password
 const forgotPassword = async (req, res) => {

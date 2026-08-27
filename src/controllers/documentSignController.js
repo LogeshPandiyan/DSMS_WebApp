@@ -7,6 +7,14 @@ const { createAuditLog } = require('../utils/auditLogger');
 const { sendNotification } = require('../utils/socket');
 const crypto = require('crypto');
 
+const getBaseEmail = (email) => {
+    if (!email) return '';
+    const parts = email.toLowerCase().trim().split('@');
+    if (parts.length !== 2) return email.toLowerCase().trim();
+    const userPart = parts[0].split('+')[0];
+    return `${userPart}@${parts[1]}`;
+};
+
 // @desc    Save signature fields and promote draft → pending (send for signing)
 // @route   PUT /api/documents/save-fields/:id
 // @access  Private (Admin/Manager)
@@ -93,20 +101,69 @@ const updateDocumentFields = async (req, res) => {
             if (document.emailSettings?.sendEmail !== false) {
                 try {
                     const usersToNotify = await User.find({ _id: { $in: assignedToArray } });
+                    const uploaderBaseEmail = getBaseEmail(req.user.email);
+                    const assignedBaseEmails = usersToNotify.map(u => getBaseEmail(u.email));
+
+                    // 1. Send sign request email to each signer (with CC visible in header, but delivered strictly to signer)
+                    const ccHeader = document.emailSettings?.cc ? document.emailSettings.cc.trim() : null;
+
                     usersToNotify.forEach(user => {
                         const rawToken = tokenMap[user._id.toString()];
                         const customLink = rawToken
                             ? `${process.env.FRONTEND_URL}/sign/${document._id}?token=${rawToken}&email=${encodeURIComponent(user.email)}`
                             : null;
 
+                        const baseSubject = document.emailSettings?.subject || `Signature Request: ${document.title}`;
+                        const recipientSubject = usersToNotify.length > 1 ? `${baseSubject} - ${user.name}` : baseSubject;
+
                         sendEmail(
                             user.email,
-                            document.emailSettings?.subject || `Signature Request: ${document.title}`,
-                            templates.documentAssigned(user.name, document.title, document._id, document.emailSettings?.message, customLink),
-                            document.emailSettings?.replyTo,
-                            document.emailSettings?.cc
+                            recipientSubject,
+                            templates.documentAssigned(
+                                user.name, 
+                                document.title, 
+                                document._id, 
+                                document.emailSettings?.message, 
+                                customLink,
+                                ccHeader
+                            ),
+                            document.emailSettings?.replyTo || null,
+                            ccHeader || null, // Adds 'Cc' MIME header so Gmail popup shows "cc: ..."
+                            [user.email]      // SMTP delivers exclusively to user.email (preventing sign link leakage)
                         );
                     });
+
+                    // 2. Send observer copy to CC recipients (strictly NO sign button/token)
+                    if (ccHeader) {
+                        const ccEmails = ccHeader
+                            .split(',')
+                            .map(email => email.trim().toLowerCase())
+                            .filter(email => {
+                                if (!email) return false;
+                                const baseCc = getBaseEmail(email);
+                                // Exclude uploader and all assigned signers
+                                return baseCc !== uploaderBaseEmail && !assignedBaseEmails.includes(baseCc);
+                            });
+
+                        ccEmails.forEach(ccEmail => {
+                            const ccName = ccEmail.split('@')[0];
+                            const capitalizedCcName = ccName.charAt(0).toUpperCase() + ccName.slice(1);
+                            sendEmail(
+                                ccEmail,
+                                `Observer Copy: ${document.emailSettings?.subject || document.title}`,
+                                templates.documentCCNotification(
+                                    capitalizedCcName, 
+                                    document.title, 
+                                    document._id, 
+                                    document.emailSettings?.message,
+                                    ccHeader
+                                ),
+                                document.emailSettings?.replyTo || null,
+                                null,
+                                [ccEmail]
+                            );
+                        });
+                    }
                 } catch (emailErr) {
                     console.error('Field Prep Notification Error:', emailErr.message);
                 }
@@ -136,21 +193,21 @@ const signDocument = async (req, res) => {
         
         let browser = 'Unknown Browser';
         let os = 'Unknown OS';
-        
-        if (ua) {
-            if (ua.includes('Windows')) os = 'Windows';
-            else if (ua.includes('Macintosh') || ua.includes('Mac OS')) os = 'macOS';
-            else if (ua.includes('Linux')) os = 'Linux';
-            else if (ua.includes('Android')) os = 'Android';
-            else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+            
+            if (ua) {
+                if (ua.includes('Windows')) os = 'Windows';
+                else if (ua.includes('Macintosh') || ua.includes('Mac OS')) os = 'macOS';
+                else if (ua.includes('Linux')) os = 'Linux';
+                else if (ua.includes('Android')) os = 'Android';
+                else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
 
-            if (ua.includes('Chrome') && !ua.includes('Chromium') && !ua.includes('Edg')) browser = 'Google Chrome';
-            else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
-            else if (ua.includes('Firefox')) browser = 'Mozilla Firefox';
-            else if (ua.includes('Edg')) browser = 'Microsoft Edge';
-            else if (ua.includes('Trident') || ua.includes('MSIE')) browser = 'Internet Explorer';
-            else if (ua.includes('Chromium')) browser = 'Chromium';
-        }
+                if (ua.includes('Chrome') && !ua.includes('Chromium') && !ua.includes('Edg')) browser = 'Google Chrome';
+                else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+                else if (ua.includes('Firefox')) browser = 'Mozilla Firefox';
+                else if (ua.includes('Edg')) browser = 'Microsoft Edge';
+                else if (ua.includes('Trident') || ua.includes('MSIE')) browser = 'Internet Explorer';
+                else if (ua.includes('Chromium')) browser = 'Chromium';
+            }
 
         if (!signatures || Object.keys(signatures).length === 0) {
             return res.status(400).json({

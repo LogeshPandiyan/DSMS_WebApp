@@ -77,9 +77,11 @@ const protectOrSignToken = async (req, res, next) => {
             const hashedToken = crypto.createHash('sha256').update(signToken).digest('hex');
 
             // Find matching token in document.signTokens
+            // For GET requests (viewing details), allow even if already used.
+            // For POST/PUT requests (signing/actions), require it to be unused.
             const tokenEntry = document.signTokens.find(entry => 
                 entry.token === hashedToken && 
-                !entry.isUsed && 
+                (req.method === 'GET' ? true : !entry.isUsed) && 
                 entry.expiresAt > new Date()
             );
 
@@ -132,16 +134,4 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-const adminOrManagerOnly = (req, res, next) => {
-    if (req.user && (req.user.role === 'admin' || req.user.role === 'manager')) {
-        next();
-    } else {
-        res.status(403).json({ 
-            success:false,
-            statusCode:403,
-            message: 'Access Denied: Admin or Manager role required.' 
-        });
-    }
-};
-
-module.exports = { protect, protectOrSignToken, adminOnly, adminOrManagerOnly };
+module.exports = { protect, protectOrSignToken, adminOnly };
