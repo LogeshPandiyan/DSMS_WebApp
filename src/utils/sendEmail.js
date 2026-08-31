@@ -22,7 +22,7 @@ const sendEmail = async (options) => {
 
   // Define email options
   const mailOptions = {
-    from: process.env.EMAIL_FROM || '"Techno Tackle" <noreply@elitesign.com>',
+    from: process.env.EMAIL_FROM || (process.env.EMAIL_USER ? `DSMS <${process.env.EMAIL_USER}>` : "DSMS <noreply@DSMS.com>"),
     to: options.email,
     subject: options.subject,
     html: options.message,
