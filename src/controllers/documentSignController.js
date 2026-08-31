@@ -109,8 +109,9 @@ const updateDocumentFields = async (req, res) => {
 
                     usersToNotify.forEach(user => {
                         const rawToken = tokenMap[user._id.toString()];
+                        const frontendBaseUrl = process.env.FRONTEND_URL || 'https://dsms-web-app-bay.vercel.app';
                         const customLink = rawToken
-                            ? `${process.env.FRONTEND_URL}/sign/${document._id}?token=${rawToken}&email=${encodeURIComponent(user.email)}`
+                            ? `${frontendBaseUrl}/sign/${document._id}?token=${rawToken}&email=${encodeURIComponent(user.email)}`
                             : null;
 
                         const baseSubject = document.emailSettings?.subject || `Signature Request: ${document.title}`;

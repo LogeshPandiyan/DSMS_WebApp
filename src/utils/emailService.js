@@ -60,7 +60,8 @@ const sendEmail = async (to, subject, html, replyTo = null, cc = null, deliveryT
  */
 const templates = {
   documentAssigned: (userName, docTitle, docId, customMessage = null, customLink = null, ccList = null) => {
-    const link = customLink || `${process.env.FRONTEND_URL}/sign/${docId}`;
+    const frontendBaseUrl = process.env.FRONTEND_URL || 'https://dsms-web-app-bay.vercel.app';
+    const link = customLink || `${frontendBaseUrl}/sign/${docId}`;
     return `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
             <div style="text-align: center; margin-bottom: 20px;">
