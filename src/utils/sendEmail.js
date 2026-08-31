@@ -9,16 +9,16 @@ const nodemailer = require("nodemailer");
  */
 const sendEmail = async (options) => {
   try {
-    // Create a transporter
+    // Create a transporter using Gmail service configuration
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+      service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-      family: 4, // Force IPv4 to avoid ENETUNREACH on IPv6 in environments like Render
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
 
     // Define email options
