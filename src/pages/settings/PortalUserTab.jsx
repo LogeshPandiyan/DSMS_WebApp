@@ -78,7 +78,7 @@ const PortalUserTab = ({ currentUser }) => {
             toast.success('User deleted successfully');
             fetchUsers();
             setDeleteModal({ isOpen: false, userId: null, userName: '' });
-        } catch (error) {
+        } catch {
             toast.error('Failed to delete user');
         }
     };
@@ -90,7 +90,7 @@ const PortalUserTab = ({ currentUser }) => {
             toast.success(`User account has been ${toggleModal.isActive !== false ? 'deactivated' : 'activated'}`);
             fetchUsers();
             setToggleModal({ isOpen: false, userId: null, isActive: null, userName: '' });
-        } catch (error) {
+        } catch {
             toast.error('Failed to update user status');
         }
     };
