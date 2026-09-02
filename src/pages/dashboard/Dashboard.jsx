@@ -20,7 +20,8 @@ import {
     Search,
     History,
     Calendar,
-    Send
+    Send,
+    PenTool
 } from 'lucide-react';
 import { getDashboardStats } from '../../services/dashboardService';
 import { toast } from 'sonner';
@@ -199,14 +200,25 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => navigate('/upload')}
-                                style={{ backgroundColor: brandColor }}
-                                className="px-6 py-3 text-white rounded-[5px] font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
-                            >
-                                <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
-                                Start New Workflow
-                            </button>
+                            {user?.role === 'admin' ? (
+                                <button
+                                    onClick={() => navigate('/upload')}
+                                    style={{ backgroundColor: brandColor }}
+                                    className="px-6 py-3 text-white rounded-[5px] font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
+                                >
+                                    <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
+                                    Start New Workflow
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => navigate('/documents')}
+                                    style={{ backgroundColor: brandColor }}
+                                    className="px-6 py-3 text-white rounded-[5px] font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    View Documents
+                                </button>
+                            )}
                             <button
                                 onClick={() => navigate('/settings')}
                                 className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-[5px] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
@@ -239,7 +251,7 @@ const Dashboard = () => {
                 <StatCard icon={Clock} label="Pending Reviews" value={stats?.pendingDocuments || '0'} color="#F59E0B" delay={100} />
                 <StatCard icon={CheckCircle2} label="Signed Docs" value={stats?.signedDocuments || '0'} color="#10B981" delay={200} />
                 <StatCard icon={FileText} label="Total Records" value={stats?.totalDocuments || '0'} color={brandColor} delay={300} />
-                <StatCard icon={UserIcon} label="Portal Users" value={stats?.totalUsers || '0'} color="#6366F1" delay={400} />
+                <StatCard icon={PenTool} label="Action Required" value={stats?.pendingDocuments || '0'} color="#6366F1" delay={400} />
             </div>
 
             {/* Activity & Quick Actions Section */}
@@ -384,9 +396,9 @@ const Dashboard = () => {
 
                         <div className="grid grid-cols-2 gap-3 pt-2">
                             {[
-                                { icon: FileText, label: 'Upload', path: '/upload' },
+                                ...(user?.role === 'admin' ? [{ icon: FileText, label: 'Upload', path: '/upload' }] : []),
                                 { icon: Clock, label: 'Queue', path: '/documents' },
-                                { icon: UserIcon, label: 'Users', path: '/admin/users' },
+                                ...(user?.role === 'admin' ? [{ icon: UserIcon, label: 'Users', path: '/admin/users' }] : []),
                                 { icon: Settings, label: 'Settings', path: '/settings' }
                             ].map((action, i) => (
                                 <button

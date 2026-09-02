@@ -306,7 +306,7 @@ const DocumentList = () => {
                                                                 </div>
                                                             )}
 
-                                                        {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && (doc.status === 'pending' || doc.status === 'partially_signed' || doc.status === 'draft') && (
+                                                        {currentUser?.role === 'admin' && doc.status === 'draft' && (
                                                             <div className="px-1.5">
                                                                 <button
                                                                     onClick={() => navigate(`/prepare/${doc.documentId || doc._id}`)}
@@ -321,7 +321,7 @@ const DocumentList = () => {
                                                         <div className="px-1.5">
                                                             <button
                                                                 onClick={() => window.open(getAssetUrl(doc.filePath), '_blank')}
-                                                                className="w-full px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-all flex items-center gap-3 rounded-[4px]"
+                                                                className="w-full px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 transition-all flex items-center gap-3 rounded-[4px]"
                                                             >
                                                                 <Download className="h-4 w-4" />
                                                                 Download PDF
