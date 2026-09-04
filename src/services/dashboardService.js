@@ -10,9 +10,9 @@ export const getUserProfile = async () => {
     }
 };
 
-export const getDashboardStats = async () => {
+export const getDashboardStats = async (params = {}) => {
     try {
-        const dashboardStatsResponse = await API.get('/dashboard/get-stats');
+        const dashboardStatsResponse = await API.get('/dashboard/get-stats', { params });
         return dashboardStatsResponse.data;
     } catch (error) {
         console.error('Error in getDashboardStats:', error.response?.data || error.message);

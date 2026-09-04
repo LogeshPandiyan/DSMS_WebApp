@@ -21,7 +21,9 @@ import {
     History,
     Calendar,
     Send,
-    PenTool
+    PenTool,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { getDashboardStats } from '../../services/dashboardService';
 import { toast } from 'sonner';
@@ -63,12 +65,69 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activityLoading, setActivityLoading] = useState(false);
     const [greeting, setGreeting] = useState('Welcome');
     const [isBackendOnline, setIsBackendOnline] = useState(true);
     const [isBrowserOnline, setIsBrowserOnline] = useState(navigator.onLine);
+    const [selectedWeekDate, setSelectedWeekDate] = useState(new Date());
 
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const currentDayIdx = new Date().getDay();
+
+    // Calculate Sunday and Saturday of the selectedWeekDate
+    const getWeekBoundaries = (refDate) => {
+        const d = new Date(refDate);
+        const day = d.getDay(); // 0 = Sun, 6 = Sat
+        const start = new Date(d);
+        start.setDate(d.getDate() - day);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+
+        // Generate the 7 dates of this week
+        const weekDates = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date(start);
+            date.setDate(start.getDate() + i);
+            return date;
+        });
+
+        return { start, end, weekDates };
+    };
+
+    const { start: weekStart, end: weekEnd, weekDates } = getWeekBoundaries(selectedWeekDate);
+
+    // Format DD/MM/YYYY
+    const formatDateDDMMYYYY = (date) => {
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    };
+
+    // Check if selected week is current real-world week
+    const isCurrentWeek = () => {
+        const today = new Date();
+        const { start } = getWeekBoundaries(today);
+        return weekStart.getTime() === start.getTime();
+    };
+
+    const handlePrevWeek = () => {
+        const newDate = new Date(selectedWeekDate);
+        newDate.setDate(newDate.getDate() - 7);
+        setSelectedWeekDate(newDate);
+    };
+
+    const handleNextWeek = () => {
+        const newDate = new Date(selectedWeekDate);
+        newDate.setDate(newDate.getDate() + 7);
+        setSelectedWeekDate(newDate);
+    };
+
+    const handleResetToCurrentWeek = () => {
+        setSelectedWeekDate(new Date());
+    };
 
     useEffect(() => {
         const handleOnline = () => setIsBrowserOnline(true);
@@ -95,8 +154,12 @@ const Dashboard = () => {
         else setGreeting('Good Evening');
 
         const fetchStats = async () => {
+            setActivityLoading(true);
             try {
-                const response = await getDashboardStats();
+                const response = await getDashboardStats({
+                    startDate: weekStart.toISOString(),
+                    endDate: weekEnd.toISOString()
+                });
                 setStats(response.data);
                 setIsBackendOnline(true);
             } catch {
@@ -104,10 +167,11 @@ const Dashboard = () => {
                 setIsBackendOnline(false);
             } finally {
                 setLoading(false);
+                setActivityLoading(false);
             }
         };
         fetchStats();
-    }, []);
+    }, [selectedWeekDate]);
 
     const brandColor = '#12b79f';
 
@@ -258,7 +322,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-10">
                 {/* Visual Activity Chart (Sun - Sat) */}
                 <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-6 shadow-sm flex flex-col gap-8 group">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 bg-[#12b79f]/10 rounded-[5px] flex items-center justify-center text-[#12b79f] transition-transform group-hover:scale-110">
                                 <Activity className="h-5 w-5" />
@@ -268,18 +332,56 @@ const Dashboard = () => {
                                 <p className="text-[11px] font-black capitalize text-slate-400">Weekly Performance Data (Sun - Sat)</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-full border border-primary-100 dark:border-primary-500/10">
-                            <TrendingUp className="h-3 w-3" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">Live Tracking</span>
+
+                        {/* Interactive Week Range Picker */}
+                        <div className="flex items-center gap-2.5">
+                            <div className="flex items-center bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-[6px] p-1 shadow-sm">
+                                <button
+                                    onClick={handlePrevWeek}
+                                    title="Previous Week"
+                                    className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-[4px] transition-all active:scale-95 hover:text-primary-600"
+                                >
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                </button>
+
+                                <div className="flex items-center gap-2 px-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 select-none">
+                                    <Calendar className="h-3.5 w-3.5 text-[#12b79f]" />
+                                    <span>{formatDateDDMMYYYY(weekStart)} to {formatDateDDMMYYYY(weekEnd)}</span>
+                                </div>
+
+                                <button
+                                    onClick={handleNextWeek}
+                                    title="Next Week"
+                                    className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-[4px] transition-all active:scale-95 hover:text-primary-600"
+                                >
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+
+                            {isCurrentWeek() ? (
+                                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-full border border-primary-100 dark:border-primary-500/10">
+                                    <TrendingUp className="h-3 w-3" />
+                                    <span className="text-[10px] font-black uppercase tracking-tight">Live Tracking</span>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleResetToCurrentWeek}
+                                    className="hidden sm:inline-block text-[10px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-[5px] border border-primary-200 dark:border-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-all"
+                                >
+                                    Current Week
+                                </button>
+                            )}
                         </div>
                     </div>
 
                     {/* Activity Visualization */}
                     <div className="flex-1 min-h-[240px] flex items-end justify-between gap-4 px-2 pb-2">
-                            {days.map((day, i) => {
-                                const data = stats?.weeklyActivity?.[i] || { pending: 0, signed: 0 };
+                        {days.map((day, i) => {
+                            const data = stats?.weeklyActivity?.[i] || { pending: 0, signed: 0 };
                             const total = data.pending + data.signed;
-                                const isToday = i === currentDayIdx;
+                            const thisDayDate = weekDates[i];
+                            const isToday = isCurrentWeek() && i === currentDayIdx;
+                            const formattedDayDate = formatDateDDMMYYYY(thisDayDate);
 
                             // Find max total to scale (minimum ceiling of 5 to ensure step-by-step scaling)
                             const allTotals = stats?.weeklyActivity?.map(d => d.pending + d.signed) || [];
@@ -291,8 +393,8 @@ const Dashboard = () => {
                                 barHeight = Math.max(15, (total / maxTotal) * 100);
                             }
 
-                                return (
-                                <div key={day} className="flex-1 flex flex-col items-center gap-4 group/bar h-full justify-end relative">
+                            return (
+                                <div key={day} className="flex-1 flex flex-col items-center gap-4 group/bar h-full justify-end relative hover:z-50 group-hover/bar:z-50">
                                     <div
                                         className={`w-full rounded-t-[4px] transition-all duration-700 cursor-pointer relative group-hover/bar:opacity-95 flex flex-col-reverse gap-[2px]
                                             ${total > 0 ? 'bg-transparent' : (isToday ? 'bg-[#12b79f]/20' : 'bg-slate-100 dark:bg-slate-800')}`}
@@ -320,36 +422,35 @@ const Dashboard = () => {
                                             </>
                                         )}
 
-                                        {/* Real-time Tooltip */}
-                                        <div className="absolute -top-20 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-[8px] opacity-0 group-hover/bar:opacity-100 transition-all pointer-events-none whitespace-nowrap z-30 shadow-2xl scale-90 group-hover/bar:scale-100 border border-white/10">
-                                                <div className="space-y-1.5">
+                                        {/* Real-time Tooltip (Always on top with z-[9999]) */}
+                                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 rounded-[8px] opacity-0 group-hover/bar:opacity-100 transition-all pointer-events-none whitespace-nowrap z-[9999] shadow-2xl scale-90 group-hover/bar:scale-100 border border-white/10">
+                                            <div className="space-y-1.5">
                                                 <div className="flex items-center gap-2 pb-1 border-b border-white/10 dark:border-slate-100">
-                                                        <Calendar className="h-3 w-3 text-[#12b79f]" />
-                                                        <span className="text-[10px] font-black capitalize tracking-widest">{day} {isToday ? '(Today)' : ''}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between gap-6">
-                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Sent (Pending)</span>
-                                                    <span className="text-[10px] font-black">{data.pending}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between gap-6">
-                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Signed (Completed)</span>
-                                                        <span className="text-[10px] font-black text-[#12b79f]">{data.signed}</span>
-                                                    </div>
+                                                    <Calendar className="h-3 w-3 text-[#12b79f]" />
+                                                    <span className="text-[10px] font-black capitalize tracking-widest">{day} ({formattedDayDate}) {isToday ? '• Today' : ''}</span>
                                                 </div>
-                                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 dark:bg-white rotate-45"></div>
+                                                <div className="flex items-center justify-between gap-6">
+                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Sent (Pending)</span>
+                                                    <span className="text-[10px] font-black">{data.pending}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-6">
+                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Signed (Completed)</span>
+                                                    <span className="text-[10px] font-black text-[#12b79f]">{data.signed}</span>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div className="flex flex-col items-center">
-                                            <span className={`text-[9px] font-black capitalize tracking-widest ${isToday ? 'text-[#12b79f]' : 'text-slate-400'}`}>
-                                                {day}
-                                            </span>
+                                            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 dark:bg-white rotate-45"></div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+
+                                    <div className={`flex items-center gap-1 text-[10px] whitespace-nowrap ${isToday ? 'text-[#12b79f] font-black' : 'text-slate-400 font-bold'}`}>
+                                        <span className="capitalize tracking-wider">{day}</span>
+                                        <span>{thisDayDate.getDate()}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
+                </div>
 
                 {/* Real-time Events & Navigation */}
                 <div className="lg:col-span-4 flex flex-col gap-6">
