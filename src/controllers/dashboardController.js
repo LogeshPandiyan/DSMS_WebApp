@@ -58,17 +58,29 @@ const getDashboardStats = async (req, res) => {
         });
         const totalUsers = isAdmin ? await User.countDocuments() : 0;
 
-        const today = new Date();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        startOfWeek.setHours(0, 0, 0, 0);
+        let startOfWeek, endOfWeek;
+
+        if (req.query.startDate && req.query.endDate) {
+            startOfWeek = new Date(req.query.startDate);
+            startOfWeek.setHours(0, 0, 0, 0);
+            endOfWeek = new Date(req.query.endDate);
+            endOfWeek.setHours(23, 59, 59, 999);
+        } else {
+            const today = new Date();
+            startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+            endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
+        }
 
         const serverTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
 
         const activity = await Document.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startOfWeek },
+                    createdAt: { $gte: startOfWeek, $lte: endOfWeek },
                     ...(isAdmin ? {} : { assignedTo: userId })
                 }
             },
