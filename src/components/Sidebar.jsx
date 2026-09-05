@@ -21,7 +21,7 @@ import React, { useState } from 'react';
 import ConfirmationModal from './ConfirmationModal';
 import AccessPromoModal from './AccessPromoModal';
 
-const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
+const Sidebar = ({ user, isCollapsed, onToggle, className = '' }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [showAccessModal, setShowAccessModal] = useState(false);
@@ -32,9 +32,23 @@ const Sidebar = ({ user, onLogout, isCollapsed, onToggle, className = '' }) => {
             label: 'Dashboard', 
             path: '/dashboard' 
         },
-        { icon: FileText, label: 'Documents', path: '/documents', roles: ['admin', 'user'] },
-        { icon: Upload, label: 'Upload', path: '/upload', roles: ['admin'] },
-        { icon: Settings, label: 'Settings', path: '/settings' },
+        { 
+            icon: FileText, 
+            label: 'Documents', 
+            path: '/documents', 
+            roles: ['admin', 'user'] 
+        },
+        { 
+            icon: Upload, 
+            label: 'Upload', 
+            path: '/upload', 
+            roles: ['admin'] 
+        },
+        { 
+            icon: Settings, 
+            label: 'Settings', 
+            path: '/settings' 
+        },
     ];
 
     const filteredMenu = menuItems.filter(item => 

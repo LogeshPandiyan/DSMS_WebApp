@@ -238,29 +238,39 @@ const SignDocument = () => {
                 <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
                     <CheckCircle2 className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-sans font-bold text-slate-900 dark:text-white">Document Signed!</h2>
+                <h2 className="text-2xl font-sans font-bold text-slate-900 dark:text-white">
+                    Document Signed!
+                </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                     Thank you. Your signature has been securely submitted and processed.
                 </p>
                 <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
                     {isRegistered ? (
                         <>
-                            <p className="text-xs text-slate-400 font-bold mb-3">You have a registered account. Sign in to view and manage your signed documents.</p>
+                            <p className="text-xs text-slate-400 font-bold mb-3">
+                                You have a registered account. Sign in to view and manage your signed documents.
+                            </p>
                             <button
                                 onClick={() => navigate('/login')}
                                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-[5px] transition-all shadow-md"
                             >
-                                Sign In to Workspace
+                                <span>
+                                    Sign In to Workspace
+                                </span>
                             </button>
                         </>
                     ) : (
                         <>
-                            <p className="text-xs text-slate-400 font-bold mb-3">Want to manage, track, or request signatures on your own documents?</p>
+                            <p className="text-xs text-slate-400 font-bold mb-3">
+                                Want to manage, track, or request signatures on your own documents?
+                            </p>
                             <button
                                 onClick={() => navigate('/register')}
                                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-[5px] transition-all shadow-md"
                             >
-                                Create an Account
+                                <span>
+                                    Create an Account
+                                </span>
                             </button>
                         </>
                     )}
@@ -273,7 +283,9 @@ const SignDocument = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[600px] gap-3">
                 <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
-                <p className="text-xs text-slate-400 font-medium tracking-tight capitalize tracking-wide font-black">Preparing Signing Environment...</p>
+                <p className="text-xs text-slate-400 font-medium tracking-tight capitalize tracking-wide font-black">
+                    Preparing Signing Environment...
+                </p>
             </div>
         );
     }
@@ -312,14 +324,20 @@ const SignDocument = () => {
                         <ChevronLeft className="h-5 w-5" />
                     </button>
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{document.documentTitle || document.title}</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                            {document.documentTitle || document.title}
+                        </h2>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs font-bold text-emerald-600 capitalize tracking-wide flex items-center gap-1.5">
                                 <ShieldCheck className="h-3 w-3" />
-                                Secured Signing
+                                <span>
+                                    Secured Signing
+                                </span>
                             </span>
                             <div className="h-1 w-1 rounded-full bg-slate-300"></div>
-                            <span className="text-[10px] text-slate-400 font-medium">{document.fileName}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">
+                                {document.fileName}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -327,7 +345,9 @@ const SignDocument = () => {
                     {hasAlreadySigned ? (
                         <div className="px-6 py-2.5 bg-emerald-50 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-900/30 rounded-[5px] flex items-center gap-2">
                             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                            <span className="text-xs font-black capitalize tracking-wide text-emerald-700 dark:text-emerald-400">Signed</span>
+                            <span className="text-xs font-black capitalize tracking-wide text-emerald-700 dark:text-emerald-400">
+                                Signed
+                            </span>
                         </div>
                     ) : (
                         <button
@@ -336,7 +356,9 @@ const SignDocument = () => {
                             className="bg-primary-600 hover:bg-primary-500 text-white px-8 py-3 rounded-[5px] text-xs font-black capitalize tracking-wide flex items-center gap-2 shadow-lg shadow-primary-600/20 transition-all active:scale-[0.98] disabled:opacity-50"
                         >
                             {signing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                            Finish Signing
+                            <span>
+                                Finish Signing
+                            </span>
                         </button>
                     )}
                 </div>
@@ -408,7 +430,9 @@ const SignDocument = () => {
                                         <div className={`absolute -top-6 left-0 px-2 py-0.5 rounded-t-[4px] text-[9px] font-black capitalize tracking-wide flex items-center gap-1.5 whitespace-nowrap ${isMyField ? 'bg-primary-600 text-white' : 'bg-slate-400 text-white'
                                             }`}>
                                             <PenTool className="h-2.5 w-2.5" />
-                                            {isMyField ? 'Your Signature Here' : `${field.userName || field.user?.name || 'Assigned User'}'s Field`}
+                                            <span>
+                                                {isMyField ? 'Your Signature Here' : `${field.userName || field.user?.name || 'Assigned User'}'s Field`}
+                                            </span>
                                         </div>
 
                                         {fieldSignatures[field.fieldId] || fieldSignatures[field._id] || fieldSignatures[field.id] ? (
@@ -422,7 +446,9 @@ const SignDocument = () => {
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center gap-1">
                                                 <PenTool className={`h-6 w-6 ${isMyField ? 'text-primary-500' : 'text-slate-300'}`} />
-                                                <span className={`text-[9px] font-bold capitalize ${isMyField ? 'text-primary-600' : 'text-slate-400'}`}>Sign Here</span>
+                                                <span className={`text-[9px] font-bold capitalize ${isMyField ? 'text-primary-600' : 'text-slate-400'}`}>
+                                                    Sign Here
+                                                </span>
                                             </div>
                                         )}
                                     </div>
@@ -439,24 +465,32 @@ const SignDocument = () => {
                             <div className="h-8 w-8 rounded-[5px] bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
                                 <Info className="h-4 w-4" />
                             </div>
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white capitalize tracking-tight">Instructions</h3>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white capitalize tracking-tight">
+                                Instructions
+                            </h3>
                         </div>
 
                         <div className="space-y-4">
                             <div className="flex items-start gap-3">
-                                <div className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">1</div>
+                                <div className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">
+                                    1
+                                </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                                     Navigate through the document to find your assigned signature boxes (highlighted in blue).
                                 </p>
                             </div>
                             <div className="flex items-start gap-3">
-                                <div className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">2</div>
+                                <div className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">
+                                    2
+                                </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                                     Click on a box to activate the signature pad and draw your signature.
                                 </p>
                             </div>
                             <div className="flex items-start gap-3">
-                                <div className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">3</div>
+                                <div className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">
+                                    3
+                                </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                                     Once all fields are signed, click the <b>"Finish Signing"</b> button at the top.
                                 </p>
@@ -478,7 +512,9 @@ const SignDocument = () => {
 
                     {/* Participants Card */}
                     <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-[5px] p-6 space-y-4">
-                        <h4 className="text-[10px] font-black capitalize tracking-wide text-slate-500">Signing Matrix</h4>
+                        <h4 className="text-[10px] font-black capitalize tracking-wide text-slate-500">
+                            Signing Matrix
+                        </h4>
                         <div className="space-y-3">
                             {document.assignedTo.map(signer => {
                                 const signerId = signer.userId || signer._id;
@@ -503,32 +539,43 @@ const SignDocument = () => {
             {/* Signature Drawing Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+                    <div 
+                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" 
+                        onClick={() => setIsModalOpen(false)}
+                    ></div>
                     <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[10px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Adopt Your Signature</h3>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                                    Adopt Your Signature
+                                </h3>
                                 <div className="flex items-center gap-1 mt-1.5 p-[3px] bg-slate-100 dark:bg-slate-800 rounded-[5px] w-fit">
                                     <button 
                                         onClick={() => setSigType('draw')}
                                         className={`px-3 py-1 text-[10px] font-black capitalize tracking-wide rounded-[4px] transition-all flex items-center gap-2 ${sigType === 'draw' ? 'bg-white dark:bg-slate-900 text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
                                         <PenTool className="h-3 w-3" />
-                                        Draw
+                                        <span>
+                                            Draw
+                                        </span>
                                     </button>
                                     <button 
                                         onClick={() => setSigType('type')}
                                         className={`px-3 py-1 text-[10px] font-black capitalize tracking-wide rounded-[4px] transition-all flex items-center gap-2 ${sigType === 'type' ? 'bg-white dark:bg-slate-900 text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
                                         <Keyboard className="h-3 w-3" />
-                                        Type
+                                        <span>
+                                            Type
+                                        </span>
                                     </button>
                                     <button 
                                         onClick={() => setSigType('saved')}
                                         className={`px-3 py-1 text-[10px] font-black capitalize tracking-wide rounded-[4px] transition-all flex items-center gap-2 ${sigType === 'saved' ? 'bg-white dark:bg-slate-900 text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
                                         <ShieldCheck className="h-3 w-3" />
-                                        Saved
+                                        <span>
+                                            Saved
+                                        </span>
                                     </button>
                                 </div>
                             </div>
@@ -583,14 +630,22 @@ const SignDocument = () => {
                                 <div className="space-y-4">
                                     <div className="relative p-6 bg-white dark:bg-slate-900 border-2 border-dashed border-emerald-200 dark:border-emerald-800/30 rounded-[5px] flex flex-col items-center justify-center h-[280px] shadow-sm">
                                         {currentUser?.signature ? (
-                                            <img src={currentUser.signature} alt="Saved Signature" className="max-h-[200px] max-w-[500px] object-contain opacity-90" />
+                                            <img 
+                                                src={currentUser.signature} 
+                                                alt="Saved Signature" 
+                                                className="max-h-[200px] max-w-[500px] object-contain opacity-90" 
+                                            />
                                         ) : (
                                             <div className="flex flex-col items-center gap-3 text-slate-400">
                                                 <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center">
                                                     <Info className="h-6 w-6 text-slate-400" />
                                                 </div>
-                                                <p className="text-xs font-medium">No saved signature found.</p>
-                                                <p className="text-[10px]">Go to Settings &gt; Signature to set your default signature.</p>
+                                                <p className="text-xs font-medium">
+                                                    No saved signature found.
+                                                </p>
+                                                <p className="text-[10px]">
+                                                    Go to Settings &gt; Signature to set your default signature.
+                                                </p>
                                             </div>
                                         )}
                                     </div>
@@ -605,17 +660,21 @@ const SignDocument = () => {
                             {sigType === 'draw' && (
                                 <button
                                     onClick={() => sigPad.current.clear()}
-                                    className="px-6 py-2.5 rounded-[5px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black text-[10px] capitalize tracking-wide hover:bg-slate-200 transition-all"
+                                    className="px-6 py-2.5 rounded-[5px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black text-[10px] capitalize tracking-wide hover:bg-slate-200 transition-all flex items-center gap-2"
                                 >
-                                    <RotateCcw className="h-3.5 w-3.5 inline mr-2" />
-                                    Clear Pad
+                                    <RotateCcw className="h-3.5 w-3.5" />
+                                    <span>
+                                        Clear Pad
+                                    </span>
                                 </button>
                             )}
                             <button
                                 onClick={handleAcceptSignature}
                                 className="px-8 py-2.5 rounded-[5px] bg-primary-600 text-white font-black text-[10px] capitalize tracking-wide shadow-lg shadow-primary-600/20 hover:bg-primary-500 transition-all"
                             >
-                                Accept & Apply
+                                <span>
+                                    Accept & Apply
+                                </span>
                             </button>
                         </div>
                     </div>

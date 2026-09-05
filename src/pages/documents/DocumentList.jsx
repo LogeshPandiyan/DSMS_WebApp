@@ -161,7 +161,9 @@ const DocumentList = () => {
                     >
                         <div className="flex items-center gap-2">
                             <activeOption.icon className="h-4 w-4 text-primary-500" />
-                            <span>{activeOption.label}</span>
+                            <span>
+                                {activeOption.label}
+                            </span>
                             <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 ml-1">
                                 {activeOption.count}
                             </span>
@@ -192,7 +194,9 @@ const DocumentList = () => {
                                         >
                                             <div className="flex items-center gap-2.5">
                                                 <opt.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-500'}`} />
-                                                <span>{opt.label}</span>
+                                                <span>
+                                                    {opt.label}
+                                                </span>
                                             </div>
                                             <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full
                                                 ${isActive 
@@ -219,11 +223,12 @@ const DocumentList = () => {
                     {currentUser?.role === 'admin' && (
                         <button
                             onClick={() => navigate('/upload')}
-                            className="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2.5 rounded-[5px] font-bold text-sm transition-all flex items-center justify-center gap-3.5
-                            shadow-lg shadow-primary-600/20 active:scale-[0.98] whitespace-nowrap"
+                            className="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2.5 rounded-[5px] font-bold text-sm transition-all flex items-center justify-center gap-3.5 shadow-lg shadow-primary-600/20 active:scale-[0.98] whitespace-nowrap"
                         >
                             <Plus className="h-4 w-4" strokeWidth={3} />
-                            New Document
+                            <span>
+                                New Document
+                            </span>
                         </button>
                     )}
                 </div>
@@ -236,13 +241,27 @@ const DocumentList = () => {
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/50">
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 w-24 text-center border-b border-slate-200 dark:border-slate-800">Actions</th>
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">Document Title</th>
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">Sender</th>
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">Recipient</th>
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">Status</th>
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">Created Date</th>
-                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">Created At</th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 w-24 text-center border-b border-slate-200 dark:border-slate-800">
+                                    Actions
+                                </th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Document Title
+                                </th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Sender
+                                </th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Recipient
+                                </th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Status
+                                </th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Created Date
+                                </th>
+                                <th className="px-6 py-4 text-[12px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Created At
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -251,7 +270,9 @@ const DocumentList = () => {
                                     <td colSpan="7" className="px-6 py-20 text-center text-[10px] text-slate-400 font-bold capitalize tracking-wide">
                                         <div className="flex items-center justify-center gap-3">
                                             <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-                                            Syncing Records...
+                                            <span>
+                                                Syncing Records...
+                                            </span>
                                         </div>
                                     </td>
                                 </tr>
@@ -260,7 +281,9 @@ const DocumentList = () => {
                                     <td colSpan="7" className="px-6 py-24 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <FileText className="h-10 w-10 text-slate-200" />
-                                            <p className="text-slate-400 text-[10px] font-black capitalize tracking-wide">No Documents Found</p>
+                                            <p className="text-slate-400 text-[10px] font-black capitalize tracking-wide">
+                                                No Documents Found
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>
@@ -301,7 +324,9 @@ const DocumentList = () => {
                                                                         className="w-full px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 transition-all flex items-center gap-3 rounded-[4px]"
                                                                     >
                                                                         <PenTool className="h-4 w-4" />
-                                                                        Sign Document
+                                                                        <span>
+                                                                            Sign Document
+                                                                        </span>
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -313,7 +338,9 @@ const DocumentList = () => {
                                                                     className="w-full px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 transition-all flex items-center gap-3 rounded-[4px]"
                                                                 >
                                                                     <Layout className="h-4 w-4" />
-                                                                    Prepare Fields
+                                                                    <span>
+                                                                        Prepare Fields
+                                                                    </span>
                                                                 </button>
                                                             </div>
                                                         )}
@@ -324,7 +351,9 @@ const DocumentList = () => {
                                                                 className="w-full px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 transition-all flex items-center gap-3 rounded-[4px]"
                                                             >
                                                                 <Download className="h-4 w-4" />
-                                                                Download PDF
+                                                                <span>
+                                                                    Download PDF
+                                                                </span>
                                                             </button>
 
                                                             {doc.signatures && doc.signatures.length > 0 && (
@@ -333,7 +362,9 @@ const DocumentList = () => {
                                                                     className="w-full px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary-600 transition-all flex items-center gap-3 rounded-[4px]"
                                                                 >
                                                                     <FileCheck2 className="h-4 w-4" />
-                                                                    Signature Details
+                                                                    <span>
+                                                                        Signature Details
+                                                                    </span>
                                                                 </button>
                                                             )}
 
@@ -344,7 +375,9 @@ const DocumentList = () => {
                                                                         className="w-full px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center gap-3 rounded-[4px]"
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
-                                                                        Delete Document
+                                                                        <span>
+                                                                            Delete Document
+                                                                        </span>
                                                                     </button>
                                                                 </>
                                                             )}
@@ -359,7 +392,9 @@ const DocumentList = () => {
                                             </p>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{doc.uploadedBy?.userName || doc.uploadedBy?.name || 'Unknown'}</span>
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                                {doc.uploadedBy?.userName || doc.uploadedBy?.name || 'Unknown'}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-5">
                                             {Array.isArray(doc.assignedTo) && doc.assignedTo.length > 0 ? (
@@ -375,11 +410,15 @@ const DocumentList = () => {
                                                                 {/* Custom Tooltip */}
                                                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] bg-slate-900 dark:bg-slate-800 text-white text-[10px] font-bold py-2 px-3 rounded-[5px] shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 z-[9999] border border-white/10">
                                                                     <div className="flex flex-col gap-1.5">
-                                                                        <p className="text-[9px] tracking-wider text-slate-400 mb-0.5">Other Recipients</p>
+                                                                        <p className="text-[9px] tracking-wider text-slate-400 mb-0.5">
+                                                                            Other Recipients
+                                                                        </p>
                                                                         {doc.assignedTo.slice(1).map((user, idx) => (
                                                                             <div key={idx} className="whitespace-nowrap flex items-center gap-2">
                                                                                 <div className="h-1 w-1 rounded-full bg-primary-500" />
-                                                                                {user.userName || user.name}
+                                                                                <span>
+                                                                                    {user.userName || user.name}
+                                                                                </span>
                                                                             </div>
                                                                         ))}
                                                                     </div>
@@ -390,7 +429,9 @@ const DocumentList = () => {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-slate-400 italic">Unassigned</span>
+                                                <span className="text-xs text-slate-400 italic">
+                                                    Unassigned
+                                                </span>
                                             )}
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap">
@@ -403,12 +444,16 @@ const DocumentList = () => {
                                                 {(doc.status === 'partially_signed' || doc.status === 'pending' || doc.status === 'signed') && Array.isArray(doc.assignedTo) && doc.assignedTo.length > 0 && (
                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[220px] bg-slate-900 dark:bg-slate-800 text-white text-[10px] font-bold py-2.5 px-3 rounded-[5px] shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 z-[9999] border border-white/10">
                                                         <div className="flex flex-col gap-2">
-                                                            <p className="text-[9px] tracking-wider text-slate-400 mb-0.5 border-b border-white/10 pb-1">Signature Status</p>
+                                                            <p className="text-[9px] tracking-wider text-slate-400 mb-0.5 border-b border-white/10 pb-1">
+                                                                Signature Status
+                                                            </p>
                                                             {doc.assignedTo.map((user, idx) => {
                                                                 const hasSigned = doc.signatures?.some(sig => (sig.userId || sig.user?._id || sig.user || '').toString() === (user.userId || user._id || user || '').toString());
                                                                 return (
                                                                     <div key={idx} className="whitespace-nowrap flex items-center justify-between gap-4">
-                                                                        <span className={`${hasSigned ? 'text-slate-200' : 'text-slate-400'}`}>{user.userName || user.name}</span>
+                                                                        <span className={`${hasSigned ? 'text-slate-200' : 'text-slate-400'}`}>
+                                                                            {user.userName || user.name}
+                                                                        </span>
                                                                         {hasSigned ? (
                                                                             <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                                                                         ) : (
@@ -453,7 +498,9 @@ const DocumentList = () => {
                     </p>
                     <div className="flex items-center gap-4 ml-auto">
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">Rows per page:</span>
+                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">
+                                Rows per page:
+                            </span>
                             <div className="relative">
                                 <button
                                     onClick={(e) => {
@@ -468,7 +515,9 @@ const DocumentList = () => {
                                     className={`flex items-center gap-3 bg-white dark:bg-slate-900 border text-xs font-bold text-slate-700 dark:text-slate-300 rounded-[5px] pl-3 pr-2 py-1.5 transition-all min-w-[64px] justify-between
                                         ${rowsPerPageOpen ? 'border-primary-500 ring-1 ring-primary-500/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
                                 >
-                                    {limit}
+                                    <span>
+                                        {limit}
+                                    </span>
                                     <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${rowsPerPageOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
@@ -560,7 +609,10 @@ const DocumentList = () => {
                                     Signature verification details
                                 </h3>
                                 <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1">
-                                    Document Name: <span className="text-slate-900 dark:text-white font-bold">{selectedDocDetails.documentTitle || selectedDocDetails.title}</span>
+                                    Document Name:{' '}
+                                    <span className="text-slate-900 dark:text-white font-bold">
+                                        {selectedDocDetails.documentTitle || selectedDocDetails.title}
+                                    </span>
                                 </p>
                             </div>
 
@@ -595,17 +647,27 @@ const DocumentList = () => {
                                                 </div>
                                                 <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1">
                                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                                                        user name: <span className="text-sm font-bold text-slate-900 dark:text-white ml-1">{signerUser?.userName || signerUser?.name || sig.userName || 'Unknown Signer'}</span>
+                                                        user name:{' '}
+                                                        <span className="text-sm font-bold text-slate-900 dark:text-white ml-1">
+                                                            {signerUser?.userName || signerUser?.name || sig.userName || 'Unknown Signer'}
+                                                        </span>
                                                     </p>
-                                                    <span className="text-slate-200 dark:text-slate-800 hidden sm:inline">|</span>
+                                                    <span className="text-slate-200 dark:text-slate-800 hidden sm:inline">
+                                                        |
+                                                    </span>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                                                        email id: <span className="text-xs font-semibold text-slate-900 dark:text-white ml-1">{signerUser?.email || sig.user?.email || 'Unknown Email'}</span>
+                                                        email id:{' '}
+                                                        <span className="text-xs font-semibold text-slate-900 dark:text-white ml-1">
+                                                            {signerUser?.email || sig.user?.email || 'Unknown Email'}
+                                                        </span>
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-wider">Signed</span>
+                                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-wider">
+                                                    Signed
+                                                </span>
                                             </div>
                                         </div>
 
@@ -614,28 +676,38 @@ const DocumentList = () => {
                                             
                                             {/* Left Column: Signature Drawing */}
                                             <div className="space-y-2">
-                                                <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Signature preview</p>
+                                                <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">
+                                                    Signature preview
+                                                </p>
                                                 <div className="h-20 w-full bg-white border border-slate-200 dark:border-slate-800 rounded flex items-center justify-center p-2 shadow-inner">
                                                     {sig.signatureData ? (
                                                         <img src={sig.signatureData} alt="Signature" className="max-h-full max-w-full object-contain" />
                                                     ) : (
-                                                        <span className="text-[10px] text-slate-400">No signature image data</span>
+                                                        <span className="text-[10px] text-slate-400">
+                                                            No signature image data
+                                                        </span>
                                                     )}
                                                 </div>
                                                 
                                                 {/* Ink Color Indicator */}
                                                 <div className="flex items-center gap-2 mt-2">
-                                                    <span className="text-[11px] text-slate-400 font-bold">Ink color:</span>
+                                                    <span className="text-[11px] text-slate-400 font-bold">
+                                                        Ink color:
+                                                    </span>
                                                     <div 
                                                         className="h-3 w-3 rounded-full border border-slate-300 shadow-sm"
                                                         style={{ backgroundColor: sig.color || '#000000' }}
                                                     />
-                                                    <span className="text-[11px] text-slate-600 dark:text-slate-350 font-bold capitalize">{inkName}</span>
+                                                    <span className="text-[11px] text-slate-600 dark:text-slate-350 font-bold capitalize">
+                                                        {inkName}
+                                                    </span>
                                                 </div>
 
                                                 {/* Document Name */}
                                                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-1">
-                                                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Document Name</p>
+                                                    <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">
+                                                        Document Name
+                                                    </p>
                                                     <p className="text-slate-800 dark:text-slate-200 font-bold text-xs break-words">
                                                         {selectedDocDetails.documentTitle || selectedDocDetails.title}
                                                     </p>
@@ -644,13 +716,17 @@ const DocumentList = () => {
 
                                             {/* Right Column: Metadata Proofs */}
                                             <div className="space-y-2.5">
-                                                <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Security proofs</p>
+                                                <p className="text-[10px] uppercase font-black text-slate-400 tracking-wider">
+                                                    Security proofs
+                                                </p>
                                                 
                                                 {/* Timestamp */}
                                                 <div className="flex items-center gap-2.5">
                                                     <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                     <div>
-                                                        <p className="text-[10px] text-slate-400 font-bold">Date and time</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold">
+                                                            Date and time
+                                                        </p>
                                                         <p className="text-slate-800 dark:text-slate-200 font-bold">
                                                             {new Date(sig.signedAt).toLocaleString('en-GB', { hour12: true })}
                                                         </p>
@@ -661,7 +737,9 @@ const DocumentList = () => {
                                                 <div className="flex items-center gap-2.5">
                                                     <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                     <div>
-                                                        <p className="text-[10px] text-slate-400 font-bold">IP address</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold">
+                                                            IP address
+                                                        </p>
                                                         <p className="text-slate-800 dark:text-slate-200 font-bold">
                                                             {sig.ipAddress || 'Not recorded'}
                                                         </p>
@@ -672,7 +750,9 @@ const DocumentList = () => {
                                                 <div className="flex items-center gap-2.5">
                                                     <Monitor className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                     <div>
-                                                        <p className="text-[10px] text-slate-400 font-bold">Device and browser</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold">
+                                                            Device and browser
+                                                        </p>
                                                         <p className="text-slate-800 dark:text-slate-200 font-bold">
                                                             {sig.browser || sig.os ? `${sig.browser || 'Unknown Browser'} (${sig.os || 'Unknown OS'})` : 'Not recorded'}
                                                         </p>
@@ -683,7 +763,9 @@ const DocumentList = () => {
                                                 <div className="flex items-center gap-2.5">
                                                     <FileCheck2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                     <div>
-                                                        <p className="text-[10px] text-slate-400 font-bold">Signature type</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold">
+                                                            Signature type
+                                                        </p>
                                                         <p className="text-slate-800 dark:text-slate-200 font-bold">
                                                             Electronic signature (e-Signature)
                                                         </p>
@@ -695,7 +777,9 @@ const DocumentList = () => {
                                                     <div className="flex items-center gap-2.5">
                                                         <Fingerprint className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                         <div>
-                                                            <p className="text-[10px] text-slate-400 font-bold">Signature ID</p>
+                                                            <p className="text-[10px] text-slate-400 font-bold">
+                                                                Signature ID
+                                                            </p>
                                                             <p className="text-slate-800 dark:text-slate-200 font-mono text-[10.5px] font-bold break-all">
                                                                 {sig.signatureId}
                                                             </p>
@@ -708,7 +792,9 @@ const DocumentList = () => {
                                                     <div className="flex items-center gap-2.5">
                                                         <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                                                         <div>
-                                                            <p className="text-[10px] text-slate-400 font-bold">Document ID</p>
+                                                            <p className="text-[10px] text-slate-400 font-bold">
+                                                                Document ID
+                                                            </p>
                                                             <p className="text-slate-800 dark:text-slate-200 font-mono text-[10.5px] font-bold break-all">
                                                                 {selectedDocDetails.documentId}
                                                             </p>

@@ -242,7 +242,8 @@ const Dashboard = () => {
                                 <Zap className="h-3 w-3 animate-pulse" style={{ color: brandColor }} />
                                 <span
                                     className="text-[10px] font-black capitalize tracking-wide"
-                                    style={{ color: brandColor }}>
+                                    style={{ color: brandColor }}
+                                >
                                     System Online
                                 </span>
                             </div>
@@ -250,11 +251,10 @@ const Dashboard = () => {
 
                         <div className="space-y-2">
                             <h2 className="text-4xl md:text-[40px] font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-4">
-                                {greeting}, 
-                                <span 
-                                style={{ color: brandColor }}>
+                                {greeting},{' '}
+                                <span style={{ color: brandColor }}>
                                     {user?.name}!
-                            </span>
+                                </span>
                             </h2>
                             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md font-medium leading-relaxed">
                                 {user?.role === 'admin'
@@ -271,7 +271,7 @@ const Dashboard = () => {
                                     className="px-6 py-3 text-white rounded-[5px] font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
                                 >
                                     <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" strokeWidth={3} />
-                                    Start New Workflow
+                                    <span>Start New Workflow</span>
                                 </button>
                             ) : (
                                 <button
@@ -280,7 +280,7 @@ const Dashboard = () => {
                                     className="px-6 py-3 text-white rounded-[5px] font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
                                 >
                                     <FileText className="h-4 w-4" />
-                                    View Documents
+                                    <span>View Documents</span>
                                 </button>
                             )}
                             <button
@@ -288,7 +288,7 @@ const Dashboard = () => {
                                 className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-[5px] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
                             >
                                 <Settings className="h-4 w-4" />
-                                Preferences
+                                <span>Preferences</span>
                             </button>
                         </div>
                     </div>
@@ -301,8 +301,12 @@ const Dashboard = () => {
                                     <ShieldCheck className="h-8 w-8" style={{ color: brandColor }} />
                                 </div>
                                 <div>
-                                    <p className="text-3xl font-black text-slate-900 dark:text-white leading-none">{stats?.securityScore || '98'}%</p>
-                                    <p className="text-[10px] font-black capitalize tracking-wide text-slate-400 mt-2">Security Index</p>
+                                    <p className="text-3xl font-black text-slate-900 dark:text-white leading-none">
+                                        {stats?.securityScore || '98'}%
+                                    </p>
+                                    <p className="text-[10px] font-black capitalize tracking-wide text-slate-400 mt-2">
+                                        Security Index
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -312,10 +316,34 @@ const Dashboard = () => {
 
             {/* Stats Overview Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard icon={Clock} label="Pending Reviews" value={stats?.pendingDocuments || '0'} color="#F59E0B" delay={100} />
-                <StatCard icon={CheckCircle2} label="Signed Docs" value={stats?.signedDocuments || '0'} color="#10B981" delay={200} />
-                <StatCard icon={FileText} label="Total Records" value={stats?.totalDocuments || '0'} color={brandColor} delay={300} />
-                <StatCard icon={PenTool} label="Action Required" value={stats?.pendingDocuments || '0'} color="#6366F1" delay={400} />
+                <StatCard 
+                    icon={Clock} 
+                    label="Pending Reviews" 
+                    value={stats?.pendingDocuments || '0'} 
+                    color="#F59E0B" 
+                    delay={100} 
+                />
+                <StatCard 
+                    icon={CheckCircle2} 
+                    label="Signed Docs" 
+                    value={stats?.signedDocuments || '0'} 
+                    color="#10B981" 
+                    delay={200} 
+                />
+                <StatCard 
+                    icon={FileText} 
+                    label="Total Records" 
+                    value={stats?.totalDocuments || '0'} 
+                    color={brandColor} 
+                    delay={300} 
+                />
+                <StatCard 
+                    icon={PenTool} 
+                    label="Action Required" 
+                    value={stats?.pendingDocuments || '0'} 
+                    color="#6366F1" 
+                    delay={400} 
+                />
             </div>
 
             {/* Activity & Quick Actions Section */}
@@ -328,8 +356,12 @@ const Dashboard = () => {
                                 <Activity className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Workspace Activity</h3>
-                                <p className="text-[11px] font-black capitalize text-slate-400">Weekly Performance Data (Sun - Sat)</p>
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                    Workspace Activity
+                                </h3>
+                                <p className="text-[11px] font-black capitalize text-slate-400">
+                                    Weekly Performance Data (Sun - Sat)
+                                </p>
                             </div>
                         </div>
 
@@ -361,7 +393,9 @@ const Dashboard = () => {
                             {isCurrentWeek() ? (
                                 <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-full border border-primary-100 dark:border-primary-500/10">
                                     <TrendingUp className="h-3 w-3" />
-                                    <span className="text-[10px] font-black uppercase tracking-tight">Live Tracking</span>
+                                    <span className="text-[10px] font-black uppercase tracking-tight">
+                                        Live Tracking
+                                    </span>
                                 </div>
                             ) : (
                                 <button
@@ -427,15 +461,25 @@ const Dashboard = () => {
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center gap-2 pb-1 border-b border-white/10 dark:border-slate-100">
                                                     <Calendar className="h-3 w-3 text-[#12b79f]" />
-                                                    <span className="text-[10px] font-black capitalize tracking-widest">{day} ({formattedDayDate}) {isToday ? '• Today' : ''}</span>
+                                                    <span className="text-[10px] font-black capitalize tracking-widest">
+                                                        {day} ({formattedDayDate}) {isToday ? '• Today' : ''}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center justify-between gap-6">
-                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Sent (Pending)</span>
-                                                    <span className="text-[10px] font-black">{data.pending}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                                        Sent (Pending)
+                                                    </span>
+                                                    <span className="text-[10px] font-black">
+                                                        {data.pending}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center justify-between gap-6">
-                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Signed (Completed)</span>
-                                                    <span className="text-[10px] font-black text-[#12b79f]">{data.signed}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                                        Signed (Completed)
+                                                    </span>
+                                                    <span className="text-[10px] font-black text-[#12b79f]">
+                                                        {data.signed}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 dark:bg-white rotate-45"></div>
@@ -456,8 +500,12 @@ const Dashboard = () => {
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-6 shadow-sm space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-[13px] font-black capitalize">System Activity</h3>
-                            <div className="px-3 py-1 bg-[#12b79f]/10 text-[#12b79f] rounded text-[10px] font-black capitalize">Today</div>
+                            <h3 className="text-[13px] font-black capitalize">
+                                System Activity
+                            </h3>
+                            <div className="px-3 py-1 bg-[#12b79f]/10 text-[#12b79f] rounded text-[10px] font-black capitalize">
+                                Today
+                            </div>
                         </div>
 
                         <div className="space-y-4">
@@ -466,8 +514,12 @@ const Dashboard = () => {
                                     <Plus className="h-4 w-4" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-[11px] font-bold text-slate-900 dark:text-white">New Doc Uploaded</p>
-                                    <p className="text-[10px] text-slate-400 mt-0.5">{stats?.todayCounts?.uploaded || 0} Records Today</p>
+                                    <p className="text-[11px] font-bold text-slate-900 dark:text-white">
+                                        New Doc Uploaded
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">
+                                        {stats?.todayCounts?.uploaded || 0} Records Today
+                                    </p>
                                 </div>
                                 <ArrowUpRight className="h-3 w-3 text-slate-300" />
                             </div>
@@ -477,8 +529,12 @@ const Dashboard = () => {
                                     <CheckCircle2 className="h-4 w-4" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-[11px] font-bold text-slate-900 dark:text-white">Contract Signed</p>
-                                    <p className="text-[10px] text-slate-400 mt-0.5">{stats?.todayCounts?.signed || 0} Completed Today</p>
+                                    <p className="text-[11px] font-bold text-slate-900 dark:text-white">
+                                        Contract Signed
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">
+                                        {stats?.todayCounts?.signed || 0} Completed Today
+                                    </p>
                                 </div>
                                 <ArrowUpRight className="h-3 w-3 text-slate-300" />
                             </div>
@@ -488,8 +544,12 @@ const Dashboard = () => {
                                     <History className="h-4 w-4" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-[11px] font-bold text-slate-900 dark:text-white">User Access Updated</p>
-                                    <p className="text-[10px] text-slate-400 mt-0.5">Last Action: {formatTime(stats?.lastActionTime)}</p>
+                                    <p className="text-[11px] font-bold text-slate-900 dark:text-white">
+                                        User Access Updated
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">
+                                        Last Action: {formatTime(stats?.lastActionTime)}
+                                    </p>
                                 </div>
                                 <ArrowUpRight className="h-3 w-3 text-slate-300" />
                             </div>
@@ -530,11 +590,16 @@ const Dashboard = () => {
                                 <ShieldCheck className="h-6 w-6" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold leading-tight tracking-tight">Enterprise Protection</h3>
-                                <p className="text-[10px] opacity-80 mt-1 font-medium italic">Compliant with ESIGN & eIDAS protocols.</p>
+                                <h3 className="text-sm font-bold leading-tight tracking-tight">
+                                    Enterprise Protection
+                                </h3>
+                                <p className="text-[10px] opacity-80 mt-1 font-medium italic">
+                                    Compliant with ESIGN & eIDAS protocols.
+                                </p>
                             </div>
                             <div className="flex items-center gap-2 text-[9px] font-black capitalize tracking-widest bg-white/20 w-fit px-3 py-1.5 rounded-full hover:bg-white/30 transition-all">
-                                Protocol Active <ArrowUpRight className="h-3 w-3" />
+                                <span>Protocol Active</span>
+                                <ArrowUpRight className="h-3 w-3" />
                             </div>
                         </div>
                         <Activity className="absolute -right-6 -bottom-6 h-32 w-32 opacity-10 group-hover:scale-125 transition-transform duration-1000" />

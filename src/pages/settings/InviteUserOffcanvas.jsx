@@ -86,8 +86,12 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                             <UserPlus className="h-5 w-5" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Invite New User</h2>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Add a user to the organization</p>
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                                Invite New User
+                            </h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                Add a user to the organization
+                            </p>
                         </div>
                     </div>
                     <button 
@@ -104,7 +108,9 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                             <div className="h-16 w-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-2">
                                 <CheckCircle2 className="h-8 w-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white text-center">User Invited!</h3>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white text-center">
+                                User Invited!
+                            </h3>
                             <p className="text-sm text-slate-500 text-center -mt-4">
                                 Share this link with the user to help them set up their account password.
                             </p>
@@ -121,7 +127,11 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                     className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-white dark:bg-slate-700 hover:bg-slate-100 border border-slate-200 dark:border-slate-600 rounded-md text-slate-600 transition-colors"
                                     title="Copy Link"
                                 >
-                                    {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                                    {copied ? (
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
                                 </button>
                             </div>
 
@@ -129,24 +139,38 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                 onClick={resetAndClose}
                                 className="w-full mt-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-lg transition-colors"
                             >
-                                Done
+                                <span>
+                                    Done
+                                </span>
                             </button>
                         </div>
                     ) : (
                         <form id="invite-form" onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-1">
-                                <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Full Name *</label>
+                                <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">
+                                    Full Name *
+                                </label>
                                 <input 
-                                    type="text" name="name" required value={formData.name} onChange={handleChange}
+                                    type="text" 
+                                    name="name" 
+                                    required 
+                                    value={formData.name} 
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
                                     placeholder="Enter your full name"
                                 />
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Email Address *</label>
+                                <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">
+                                    Email Address *
+                                </label>
                                 <input 
-                                    type="email" name="email" required value={formData.email} onChange={handleChange}
+                                    type="email" 
+                                    name="email" 
+                                    required 
+                                    value={formData.email} 
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
                                     placeholder="Enter email address"
                                 />
@@ -154,7 +178,9 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-350 capitalize tracking-wide">Select Role *</label>
+                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-350 capitalize tracking-wide">
+                                        Select Role *
+                                    </label>
                                     <div className="relative">
                                         <button
                                             type="button"
@@ -164,7 +190,9 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                             }}
                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500 flex items-center justify-between transition-all"
                                         >
-                                            <span className="capitalize">{formData.role}</span>
+                                            <span className="capitalize">
+                                                {formData.role}
+                                            </span>
                                             <ChevronDown className={`h-4 w-4 text-slate-450 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
                                         </button>
 
@@ -183,7 +211,9 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                                                 ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20' 
                                                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
                                                     >
-                                                        {opt.label}
+                                                        <span>
+                                                            {opt.label}
+                                                        </span>
                                                     </button>
                                                 ))}
                                             </div>
@@ -191,9 +221,14 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-350 capitalize tracking-wide">Phone</label>
+                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-350 capitalize tracking-wide">
+                                        Phone
+                                    </label>
                                     <input 
-                                        type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                                        type="tel" 
+                                        name="phone" 
+                                        value={formData.phone} 
+                                        onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
                                         placeholder="Enter phone number"
                                     />
@@ -201,9 +236,14 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Job Title / Designation</label>
+                                <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">
+                                    Job Title / Designation
+                                </label>
                                 <input 
-                                    type="text" name="jobTitle" value={formData.jobTitle} onChange={handleChange}
+                                    type="text" 
+                                    name="jobTitle" 
+                                    value={formData.jobTitle} 
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
                                     placeholder="Enter designation"
                                 />
@@ -211,17 +251,27 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Department</label>
+                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">
+                                        Department
+                                    </label>
                                     <input 
-                                        type="text" name="department" value={formData.department} onChange={handleChange}
+                                        type="text" 
+                                        name="department" 
+                                        value={formData.department} 
+                                        onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
                                         placeholder="Enter department"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">Location</label>
+                                    <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wide">
+                                        Location
+                                    </label>
                                     <input 
-                                        type="text" name="location" value={formData.location} onChange={handleChange}
+                                        type="text" 
+                                        name="location" 
+                                        value={formData.location} 
+                                        onChange={handleChange}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
                                         placeholder="Enter location"
                                     />
@@ -239,7 +289,13 @@ const InviteUserOffcanvas = ({ isOpen, onClose, onUserInvited }) => {
                             disabled={loading}
                             className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                         >
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send Invitation'}
+                            {loading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <span>
+                                    Send Invitation
+                                </span>
+                            )}
                         </button>
                     </div>
                 )}

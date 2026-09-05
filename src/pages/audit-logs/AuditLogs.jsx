@@ -73,8 +73,12 @@ const AuditLogs = () => {
             {/* Header / Filters Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 mb-2">
                 <div className="space-y-1">
-                    <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black capitalize tracking-wide font-mono">System Integrity</p>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-none">Activity History</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black capitalize tracking-wide font-mono">
+                        System Integrity
+                    </p>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-none">
+                        Activity History
+                    </h2>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -102,18 +106,30 @@ const AuditLogs = () => {
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/50">
-                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">Action Trail</th>
-                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">User / Actor</th>
-                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">Details</th>
-                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">Network Info</th>
-                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">Timestamp</th>
+                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Action Trail
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    User / Actor
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Details
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Network Info
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black capitalize tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    Timestamp
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td colSpan="5" className="px-6 py-4"><div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-full"></div></td>
+                                        <td colSpan="5" className="px-6 py-4">
+                                            <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-full"></div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : logs.length === 0 ? (
@@ -121,29 +137,43 @@ const AuditLogs = () => {
                                     <td colSpan="5" className="px-6 py-24 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <Activity className="h-10 w-10 text-slate-200" />
-                                            <p className="text-slate-400 text-[10px] font-black capitalize tracking-wide">No activity logs found</p>
+                                            <p className="text-slate-400 text-[10px] font-black capitalize tracking-wide">
+                                                No activity logs found
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 logs.map((log) => (
-                                    <tr key={log._id} className="even:bg-slate-50/50 dark:even:bg-slate-800/20 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800">
+                                    <tr 
+                                        key={log._id} 
+                                        className="even:bg-slate-50/50 dark:even:bg-slate-800/20 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className={`h-8 w-8 rounded-full flex items-center justify-center border ${getActionStyle(log.action)}`}>
                                                     {getActionIcon(log.action)}
                                                 </div>
-                                                <span className="text-[10px] font-black capitalize tracking-wide text-slate-900 dark:text-white">{log.action.replace(/_/g, ' ')}</span>
+                                                <span className="text-[10px] font-black capitalize tracking-wide text-slate-900 dark:text-white">
+                                                    {log.action.replace(/_/g, ' ')}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{log.user?.name || 'System'}</span>
-                                                <span className="text-[9px] text-slate-400 font-medium">{log.user?.email || 'automated-task'}</span>
+                                                <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                                                    {log.user?.name || 'System'}
+                                                </span>
+                                                <span className="text-[9px] text-slate-400 font-medium">
+                                                    {log.user?.email || 'automated-task'}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-[250px] truncate" title={log.details}>
+                                            <p 
+                                                className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-[250px] truncate" 
+                                                title={log.details}
+                                            >
                                                 {log.details}
                                             </p>
                                         </td>
@@ -151,16 +181,22 @@ const AuditLogs = () => {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-1.5 text-slate-500">
                                                     <Globe className="h-3 w-3" />
-                                                    <span className="text-[10px] font-bold">{log.ipAddress}</span>
+                                                    <span className="text-[10px] font-bold">
+                                                        {log.ipAddress}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-slate-400">
                                                     <Monitor className="h-3 w-3" />
-                                                    <span className="text-[9px] truncate max-w-[120px]">{log.userAgent}</span>
+                                                    <span className="text-[9px] truncate max-w-[120px]">
+                                                        {log.userAgent}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-[10px] font-black text-slate-500 whitespace-nowrap">{formatTime(log.createdAt)}</span>
+                                            <span className="text-[10px] font-black text-slate-500 whitespace-nowrap">
+                                                {formatTime(log.createdAt)}
+                                            </span>
                                         </td>
                                     </tr>
                                 ))
@@ -176,7 +212,9 @@ const AuditLogs = () => {
                     </p>
                     <div className="flex items-center gap-4 ml-auto">
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">Rows per page:</span>
+                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">
+                                Rows per page:
+                            </span>
                             <div className="relative group/select">
                                 <select
                                     value={filters.limit}
@@ -202,7 +240,9 @@ const AuditLogs = () => {
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
-                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mx-2">{pagination.currentPage} / {pagination.totalPages}</span>
+                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mx-2">
+                                {pagination.currentPage} / {pagination.totalPages}
+                            </span>
                             <button
                                 disabled={pagination.currentPage >= pagination.totalPages}
                                 onClick={() => setFilters({ ...filters, page: pagination.currentPage + 1 })}

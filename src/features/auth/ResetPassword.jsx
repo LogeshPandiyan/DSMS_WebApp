@@ -49,12 +49,19 @@ const ResetPassword = () => {
                         <div className="h-10 w-10 bg-[#12b79f] rounded-[5px] flex items-center justify-center shadow-lg shadow-[#12b79f]/20">
                             <ShieldCheck className="h-6 w-6 text-white" />
                         </div>
-                        <span className="text-2xl font-black text-white tracking-tighter">Techno Tackle</span>
+                        <span className="text-2xl font-black text-white tracking-tighter">
+                            Techno Tackle
+                        </span>
                     </div>
 
                     <div className="space-y-6">
                         <h1 className="text-6xl font-black text-white leading-tight tracking-tighter">
-                            Finalize <span className="text-[#12b79f]">Security</span> <br />Updates.
+                            Finalize{' '}
+                            <span className="text-[#12b79f]">
+                                Security
+                            </span>{' '}
+                            <br />
+                            Updates.
                         </h1>
                         <p className="text-slate-400 text-lg max-w-md leading-relaxed font-medium">
                             Enter your new credentials below to finalize the account recovery process and secure your workspace.
@@ -64,11 +71,15 @@ const ResetPassword = () => {
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3 text-slate-400">
                             <CheckCircle2 className="h-5 w-5 text-[#12b79f]" />
-                            <span className="text-sm font-bold capitalize">Secure SHA-256 Hashing</span>
+                            <span className="text-sm font-bold capitalize">
+                                Secure SHA-256 Hashing
+                            </span>
                         </div>
                         <div className="flex items-center gap-3 text-slate-400">
                             <CheckCircle2 className="h-5 w-5 text-[#12b79f]" />
-                            <span className="text-sm font-bold capitalize">Session clearing enabled</span>
+                            <span className="text-sm font-bold capitalize">
+                                Session clearing enabled
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -78,13 +89,19 @@ const ResetPassword = () => {
             <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 lg:px-24">
                 <div className="w-full max-w-[440px] space-y-10">
                     <div className="space-y-3">
-                        <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Set New Password</h2>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium">Create a strong password to protect your account.</p>
+                        <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                            Set New Password
+                        </h2>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
+                            Create a strong password to protect your account.
+                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">New Password</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                New Password
+                            </label>
                             <div className="relative group">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#12b79f] transition-colors">
                                     <Lock className="h-5 w-5" />
@@ -102,13 +119,19 @@ const ResetPassword = () => {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                 >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
                                 </button>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Confirm New Password</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Confirm New Password
+                            </label>
                             <div className="relative group">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#12b79f] transition-colors">
                                     <Lock className="h-5 w-5" />
@@ -129,7 +152,11 @@ const ResetPassword = () => {
                             disabled={loading}
                             className="w-full py-4 bg-[#12b79f] text-white rounded-[5px] font-black text-sm shadow-xl shadow-[#12b79f]/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
-                            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Update Password'}
+                            {loading ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                'Update Password'
+                            )}
                         </button>
                     </form>
 
@@ -141,10 +168,6 @@ const ResetPassword = () => {
                         Cancel Recovery
                     </button>
                 </div>
-
-                {/* <div className="mt-20 text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center">
-                    &copy; 2026 EliteSign Technology. All Rights Reserved.
-                </div> */}
             </div>
         </div>
     );

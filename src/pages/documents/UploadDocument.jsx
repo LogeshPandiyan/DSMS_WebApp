@@ -18,6 +18,29 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const workflowSteps = [
+    {
+        icon: FileText,
+        label: 'Document name',
+        desc: 'Write document name'
+    },
+    {
+        icon: Users,
+        label: 'Assign Signers',
+        desc: 'Select who needs to sign'
+    },
+    {
+        icon: FileText,
+        label: 'Upload PDF',
+        desc: 'Securely upload your document'
+    },
+    {
+        icon: ArrowRight,
+        label: 'Prepare Fields',
+        desc: 'Place signature boxes (next step)'
+    }
+];
+
 const UploadDocument = () => {
     const [title, setTitle] = useState('');
     const [file, setFile] = useState(null);
@@ -244,26 +267,32 @@ const UploadDocument = () => {
                         <div className="max-h-52 overflow-y-auto custom-scrollbar p-1">
                             {usersInRole
                                 .filter(u => u.name.toLowerCase().includes(signerSearch.toLowerCase()) || u.email.toLowerCase().includes(signerSearch.toLowerCase()))
-                                .map(emp => (
+                                .map(signerUser => (
                                     <button
-                                        key={emp._id}
+                                        key={signerUser._id}
                                         type="button"
-                                        onClick={() => toggleUser(emp._id)}
+                                        onClick={() => toggleUser(signerUser._id)}
                                         className={`w-full px-2 py-2 text-left flex items-center gap-2.5 transition-all rounded-[4px] mb-0.5 border
-                                            ${assignedTo.includes(emp._id) ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'}`}
+                                            ${assignedTo.includes(signerUser._id) ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'}`}
                                     >
-                                        <div className={`h-4 w-4 rounded-[4px] border flex items-center justify-center transition-all ${assignedTo.includes(emp._id) ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 shadow-sm'}`}>
-                                            {assignedTo.includes(emp._id) && <Check className="h-3 w-3 text-white" strokeWidth={4} />}
+                                        <div className={`h-4 w-4 rounded-[4px] border flex items-center justify-center transition-all ${assignedTo.includes(signerUser._id) ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 shadow-sm'}`}>
+                                            {assignedTo.includes(signerUser._id) && <Check className="h-3 w-3 text-white" strokeWidth={4} />}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className={`text-xs font-bold ${assignedTo.includes(emp._id) ? 'text-primary-700 dark:text-primary-400' : 'text-slate-900 dark:text-white'}`}>{emp.name}</span>
-                                            <span className="text-[9px] text-slate-400">{emp.email}</span>
+                                            <span className={`text-xs font-bold ${assignedTo.includes(signerUser._id) ? 'text-primary-700 dark:text-primary-400' : 'text-slate-900 dark:text-white'}`}>
+                                                {signerUser.name}
+                                            </span>
+                                            <span className="text-[9px] text-slate-400">
+                                                {signerUser.email}
+                                            </span>
                                         </div>
                                     </button>
                                 ))}
                             {usersInRole.filter(u => u.name.toLowerCase().includes(signerSearch.toLowerCase()) || u.email.toLowerCase().includes(signerSearch.toLowerCase())).length === 0 && (
                                 <div className="py-6 text-center">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No users found</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        No users found
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -276,7 +305,7 @@ const UploadDocument = () => {
     return (
         <div className="w-full max-w-[1600px] mx-auto animate-in fade-in duration-500 py-4 px-2">
             <div className="flex flex-col lg:flex-row gap-6 items-stretch">
-                {/* Right Side (Center/Left): The Form */}
+                {/* Center/Left: The Form */}
                 <div className="w-full lg:flex-1">
                     <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-6 shadow-sm space-y-5 relative h-full">
                         
@@ -302,7 +331,9 @@ const UploadDocument = () => {
                                                     ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm border border-slate-200/50 dark:border-white/5' 
                                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                         >
-                                            All Users
+                                            <span>
+                                                All Users
+                                            </span>
                                         </button>
                                         <button
                                             type="button"
@@ -316,7 +347,9 @@ const UploadDocument = () => {
                                                     ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm border border-slate-200/50 dark:border-white/5' 
                                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                         >
-                                            By Roles
+                                            <span>
+                                                By Roles
+                                            </span>
                                         </button>
                                     </div>
                                 </div>
@@ -336,7 +369,9 @@ const UploadDocument = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Self Sign Toggle */}
                                 <div className="space-y-1.5">
-                                    <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">My Signature</label>
+                                    <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">
+                                        My Signature
+                                    </label>
                                     <button
                                         type="button"
                                         onClick={() => setSelfSign(!selfSign)}
@@ -346,7 +381,9 @@ const UploadDocument = () => {
                                             <div className={`h-8 w-8 rounded-[5px] flex items-center justify-center transition-all ${selfSign ? 'bg-primary-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
                                                 <UserCheck className="h-4 w-4" />
                                             </div>
-                                            <span className={`text-xs font-bold ${selfSign ? 'text-primary-700 dark:text-primary-400' : 'text-slate-600 dark:text-slate-400'}`}>I need to sign</span>
+                                            <span className={`text-xs font-bold ${selfSign ? 'text-primary-700 dark:text-primary-400' : 'text-slate-600 dark:text-slate-400'}`}>
+                                                I need to sign
+                                            </span>
                                         </div>
                                         <div className={`h-5 w-5 rounded-[4px] border flex items-center justify-center transition-all ${selfSign ? 'bg-primary-600 border-primary-600 shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 shadow-sm'}`}>
                                             {selfSign && <Check className="h-3.5 w-3.5 text-white" strokeWidth={4} />}
@@ -358,7 +395,9 @@ const UploadDocument = () => {
                                 <div className="space-y-1.5">
                                     {assignmentMode === 'single' ? (
                                         <>
-                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Assign Signers</label>
+                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">
+                                                Assign Signers
+                                            </label>
                                             <div className="relative" ref={singleRef}>
                                                 <button
                                                     type="button"
@@ -405,7 +444,9 @@ const UploadDocument = () => {
                                                                 <div className={`h-4 w-4 rounded-[4px] border flex items-center justify-center transition-all ${assignedTo.length === availableSigners.length && availableSigners.length > 0 ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 shadow-sm'}`}>
                                                                     {assignedTo.length === availableSigners.length && availableSigners.length > 0 && <Check className="h-3 w-3 text-white" strokeWidth={4} />}
                                                                 </div>
-                                                                <span className="text-[10px] font-black text-slate-700 dark:text-slate-300 capitalize tracking-wide">Select All ({availableSigners.length})</span>
+                                                                <span className="text-[10px] font-black text-slate-700 dark:text-slate-300 capitalize tracking-wide">
+                                                                    Select All ({availableSigners.length})
+                                                                </span>
                                                             </button>
                                                         </div>
 
@@ -423,21 +464,25 @@ const UploadDocument = () => {
                                                                         <div className="px-3 py-1.5 text-[10px] font-black text-slate-400 capitalize tracking-wide bg-slate-50 dark:bg-white/5 rounded-[4px] mb-1">
                                                                             {role}s ({usersInRole.length})
                                                                         </div>
-                                                                        {usersInRole.map(emp => (
+                                                                        {usersInRole.map(signerUser => (
                                                                             <button
-                                                                                key={emp._id}
+                                                                                key={signerUser._id}
                                                                                 type="button"
-                                                                                onClick={() => toggleUser(emp._id)}
+                                                                                onClick={() => toggleUser(signerUser._id)}
                                                                                 className={`w-full px-2 py-2 text-left flex items-center gap-2.5 transition-all rounded-[5px] mb-0.5 border
-                                                                                    ${assignedTo.includes(emp._id) ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'}`}
+                                                                                    ${assignedTo.includes(signerUser._id) ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'}`}
                                                                             >
-                                                                                <div className={`h-4 w-4 rounded-[4px] border flex items-center justify-center transition-all ${assignedTo.includes(emp._id) ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white dark:bg-slate-805 border-slate-300 dark:border-slate-600 shadow-sm'}`}>
-                                                                                    {assignedTo.includes(emp._id) && <Check className="h-3 w-3 text-white" strokeWidth={4} />}
+                                                                                <div className={`h-4 w-4 rounded-[4px] border flex items-center justify-center transition-all ${assignedTo.includes(signerUser._id) ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white dark:bg-slate-805 border-slate-300 dark:border-slate-600 shadow-sm'}`}>
+                                                                                    {assignedTo.includes(signerUser._id) && <Check className="h-3 w-3 text-white" strokeWidth={4} />}
                                                                                 </div>
 
                                                                                 <div className="flex flex-col">
-                                                                                    <span className={`text-xs font-bold ${assignedTo.includes(emp._id) ? 'text-primary-700 dark:text-primary-400' : 'text-slate-900 dark:text-white'}`}>{emp.name}</span>
-                                                                                    <span className="text-[9px] text-slate-400">{emp.email}</span>
+                                                                                    <span className={`text-xs font-bold ${assignedTo.includes(signerUser._id) ? 'text-primary-700 dark:text-primary-400' : 'text-slate-900 dark:text-white'}`}>
+                                                                                        {signerUser.name}
+                                                                                    </span>
+                                                                                    <span className="text-[9px] text-slate-400">
+                                                                                        {signerUser.email}
+                                                                                    </span>
                                                                                 </div>
                                                                             </button>
                                                                         ))}
@@ -449,7 +494,9 @@ const UploadDocument = () => {
                                                                  u.email.toLowerCase().includes(signerSearch.toLowerCase()))
                                                             ).length === 0 && (
                                                                 <div className="py-8 text-center">
-                                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No users found</p>
+                                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                                        No users found
+                                                                    </p>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -459,7 +506,9 @@ const UploadDocument = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Admins</label>
+                                            <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">
+                                                Select Admins
+                                            </label>
                                             {renderRoleDropdown('admin', UserCheck, 'Admins')}
                                         </>
                                     )}
@@ -468,7 +517,9 @@ const UploadDocument = () => {
                                 {/* Row 2: Select Users (Only if roles mode!) */}
                                 {assignmentMode === 'roles' && (
                                     <div className="space-y-1.5">
-                                        <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">Select Users</label>
+                                        <label className="text-[13px] font-bold text-slate-900 dark:text-white block ml-1">
+                                            Select Users
+                                        </label>
                                         {renderRoleDropdown('user', Users, 'Users')}
                                     </div>
                                 )}
@@ -495,11 +546,13 @@ const UploadDocument = () => {
                             {assignedTo.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5">
                                     {assignedTo.map(id => {
-                                        const emp = availableSigners.find(e => e._id === id);
+                                        const signerUser = availableSigners.find(e => e._id === id);
                                         return (
                                             <div key={id} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-sm animate-in zoom-in-95 duration-150">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-primary-500" />
-                                                <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200">{emp?.name}</span>
+                                                <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200">
+                                                    {signerUser?.name}
+                                                </span>
                                                 <button
                                                     type="button"
                                                     onClick={(e) => removeUser(id, e)}
@@ -544,7 +597,11 @@ const UploadDocument = () => {
                                                 {file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB • PDF Document` : 'Max size: 10MB'}
                                             </p>
                                         </div>
-                                        {!file && <div className="mt-1 px-4 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[5px] text-[10px] font-black capitalize tracking-wide text-slate-600 dark:text-slate-300 shadow-sm transition-all group-hover:border-primary-500/30 group-hover:text-primary-600">Choose File</div>}
+                                        {!file && (
+                                            <div className="mt-1 px-4 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[5px] text-[10px] font-black capitalize tracking-wide text-slate-600 dark:text-slate-300 shadow-sm transition-all group-hover:border-primary-500/30 group-hover:text-primary-600">
+                                                Choose File
+                                            </div>
+                                        )}
                                     </label>
                                 </div>
                                 {fileError && (
@@ -565,11 +622,15 @@ const UploadDocument = () => {
                                 {uploading ? (
                                     <>
                                         <Loader2 className="h-5 w-5 animate-spin" />
-                                        <span className="capitalize tracking-wide text-xs">Uploading...</span>
+                                        <span className="capitalize tracking-wide text-xs">
+                                            Uploading...
+                                        </span>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="capitalize tracking-wide text-xs">Initialize Workflow</span>
+                                        <span className="capitalize tracking-wide text-xs">
+                                            Initialize Workflow
+                                        </span>
                                         <ArrowRight className="h-4 w-4" />
                                     </>
                                 )}
@@ -578,33 +639,39 @@ const UploadDocument = () => {
                     </form>
                 </div>
 
-                {/* Left Side (Right Side): Info & Context */}
+                {/* Right Side: Info & Context */}
                 <div className="w-full lg:w-[330px] lg:shrink-0">
                     <div className="border border-slate-200 dark:border-slate-800 rounded-[5px] p-5 space-y-5 bg-white dark:bg-slate-900 h-full">
 
                         <div className="space-y-2">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Upload Document</h2>
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                                Upload Document
+                            </h2>
                             <p className="text-slate-500 font-semibold dark:text-slate-400 text-[12px] leading-relaxed">
                                 Initialize a new signing workflow by uploading a PDF and assigning recipients.
                             </p>
                         </div>
 
                         <div className="space-y-2 pt-2">
-                            <h3 className="text-[11px] font-black tracking-wide text-slate-500">Workflow Steps</h3>
+                            <h3 className="text-[11px] font-black tracking-wide text-slate-500">
+                                Workflow Steps
+                            </h3>
                             <div className="space-y-2">
-                                {[
-                                    { icon: FileText, label: 'Document name', desc: 'Write document name' },
-                                    { icon: Users, label: 'Assign Signers', desc: 'Select who needs to sign' },
-                                    { icon: FileText, label: 'Upload PDF', desc: 'Securely upload your document' },
-                                    { icon: ArrowRight, label: 'Prepare Fields', desc: 'Place signature boxes (next step)' }
-                                ].map((step, i) => (
-                                    <div key={i} className="flex gap-3 p-3 rounded-[5px] border border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900/50 shadow-sm transition-all hover:bg-slate-50">
+                                {workflowSteps.map((workflowStep, stepIndex) => (
+                                    <div 
+                                        key={stepIndex} 
+                                        className="flex gap-3 p-3 rounded-[5px] border border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900/50 shadow-sm transition-all hover:bg-slate-50"
+                                    >
                                         <div className="h-8 w-8 rounded-[5px] bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary-600 shrink-0 border border-slate-200/50">
-                                            <step.icon className="h-4 w-4" />
+                                            <workflowStep.icon className="h-4 w-4" />
                                         </div>
                                         <div>
-                                            <p className="text-[12px] font-bold text-slate-900 dark:text-white">{step.label}</p>
-                                            <p className="text-[13px] text-slate-400">{step.desc}</p>
+                                            <p className="text-[12px] font-bold text-slate-900 dark:text-white">
+                                                {workflowStep.label}
+                                            </p>
+                                            <p className="text-[13px] text-slate-400">
+                                                {workflowStep.desc}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
@@ -617,13 +684,11 @@ const UploadDocument = () => {
                                 Ensure your document is in PDF format and does not exceed 10MB.
                             </p>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
 };
-
-
 
 export default UploadDocument;

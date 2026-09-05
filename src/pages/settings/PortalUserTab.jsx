@@ -14,13 +14,25 @@ import {
     ChevronLeft,
     ChevronRight,
     ChevronDown,
-    Info
+    Info,
+    UserPlus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getAllUsers, updateUserRole, deleteUser, toggleUserStatus } from '../../services/adminService';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import InviteUserOffcanvas from './InviteUserOffcanvas';
-import { UserPlus } from 'lucide-react';
+
+const AVAILABLE_ROLES = [
+    'admin',
+    'user'
+];
+
+const ROWS_PER_PAGE_OPTIONS = [
+    10,
+    20,
+    30,
+    40
+];
 
 const PortalUserTab = ({ currentUser }) => {
     const [users, setUsers] = useState([]);
@@ -95,14 +107,14 @@ const PortalUserTab = ({ currentUser }) => {
         }
     };
 
-    const handleRoleChange = (user, newRole) => {
-        if (user.role === newRole) return;
+    const handleRoleChange = (portalUser, newRole) => {
+        if (portalUser.role === newRole) return;
         setRoleModal({
             isOpen: true,
-            userId: user._id,
+            userId: portalUser._id,
             newRole: newRole,
-            currentRole: user.role,
-            userName: user.name
+            currentRole: portalUser.role,
+            userName: portalUser.name
         });
     };
 
@@ -135,26 +147,32 @@ const PortalUserTab = ({ currentUser }) => {
     const getRoleIcon = (role) => {
         switch (role?.toLowerCase()) {
             case 'admin':
-                return <ShieldAlert className="h-3.5 w-3.5" />;
+                return (
+                    <ShieldAlert className="h-3.5 w-3.5" />
+                );
             case 'user':
-                return <UserCircle className="h-3.5 w-3.5" />;
+                return (
+                    <UserCircle className="h-3.5 w-3.5" />
+                );
             case 'guest':
-                return <Briefcase className="h-3.5 w-3.5" />;
+                return (
+                    <Briefcase className="h-3.5 w-3.5" />
+                );
             default:
-                return <Shield className="h-3.5 w-3.5" />;
+                return (
+                    <Shield className="h-3.5 w-3.5" />
+                );
         }
     };
 
-    const filteredUsers = users.filter(user => {
-        // Status filter
-        if (statusFilter === 'active' && user.isActive === false) return false;
-        if (statusFilter === 'inactive' && user.isActive !== false) return false;
+    const filteredUsers = users.filter((portalUser) => {
+        if (statusFilter === 'active' && portalUser.isActive === false) return false;
+        if (statusFilter === 'inactive' && portalUser.isActive !== false) return false;
 
-        // Search term filter
         return (
-            user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+            portalUser.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            portalUser.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            portalUser.role?.toLowerCase().includes(searchTerm.toLowerCase())
         );
     });
 
@@ -164,15 +182,62 @@ const PortalUserTab = ({ currentUser }) => {
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
     const totalCount = users.length;
-    const activeCount = users.filter(u => u.isActive !== false).length;
-    const inactiveCount = users.filter(u => u.isActive === false).length;
+    const activeCount = users.filter((u) => u.isActive !== false).length;
+    const inactiveCount = users.filter((u) => u.isActive === false).length;
 
     const statusOptions = [
-        { label: 'All', value: 'all', icon: Users, count: totalCount },
-        { label: 'Active', value: 'active', icon: CheckCircle2, count: activeCount },
-        { label: 'Inactive', value: 'inactive', icon: ShieldAlert, count: inactiveCount }
+        { 
+            label: 'All', 
+            value: 'all', 
+            icon: Users, 
+            count: totalCount 
+        },
+        { 
+            label: 'Active', 
+            value: 'active', 
+            icon: CheckCircle2, 
+            count: activeCount 
+        },
+        { 
+            label: 'Inactive', 
+            value: 'inactive', 
+            icon: ShieldAlert, 
+            count: inactiveCount 
+        }
     ];
-    const activeFilterOption = statusOptions.find(opt => opt.value === statusFilter) || statusOptions[0];
+    
+    const activeFilterOption = statusOptions.find((opt) => opt.value === statusFilter) || statusOptions[0];
+
+    const userStatCards = [
+        { 
+            label: 'Administrators', 
+            value: users.filter((u) => u.role === 'admin').length, 
+            icon: ShieldAlert, 
+            color: 'text-rose-600', 
+            bg: 'bg-rose-500/10' 
+        },
+        { 
+            label: 'Registered Users', 
+            value: users.filter((u) => u.role === 'user').length, 
+            icon: UserCircle, 
+            color: 'text-blue-600', 
+            bg: 'bg-blue-500/10' 
+        },
+        { 
+            label: 'Guest Signers', 
+            value: users.filter((u) => u.role === 'guest').length, 
+            icon: Briefcase, 
+            color: 'text-amber-600', 
+            bg: 'bg-amber-500/10' 
+        },
+        { 
+            label: 'Total users', 
+            value: users.length, 
+            icon: Users, 
+            color: 'text-emerald-600', 
+            bg: 'bg-emerald-500/10' 
+        }
+    ];
 
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-[10px]">
@@ -196,7 +261,9 @@ const PortalUserTab = ({ currentUser }) => {
                         >
                             <div className="flex items-center gap-2">
                                 <activeFilterOption.icon className="h-4 w-4 text-primary-500" />
-                                <span>{activeFilterOption.label}</span>
+                                <span>
+                                    {activeFilterOption.label}
+                                </span>
                                 <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 ml-1">
                                     {activeFilterOption.count}
                                 </span>
@@ -211,13 +278,13 @@ const PortalUserTab = ({ currentUser }) => {
                                 <div className="absolute left-6 -top-1.5 w-2.5 h-2.5 rotate-45 bg-white dark:bg-slate-900 border-t border-l border-slate-200 dark:border-white/5 z-0"></div>
                                 
                                 <div className="relative z-10 space-y-1">
-                                    {statusOptions.map((opt) => {
-                                        const isActive = opt.value === statusFilter;
+                                    {statusOptions.map((statusOption) => {
+                                        const isActive = statusOption.value === statusFilter;
                                         return (
                                             <button
-                                                key={opt.value}
+                                                key={statusOption.value}
                                                 onClick={() => {
-                                                    setStatusFilter(opt.value);
+                                                    setStatusFilter(statusOption.value);
                                                     setIsFilterDropdownOpen(false);
                                                 }}
                                                 className={`w-full flex items-center justify-between px-3 py-2 text-xs font-bold rounded-[4px] transition-all
@@ -226,11 +293,13 @@ const PortalUserTab = ({ currentUser }) => {
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <opt.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-slate-450 group-hover:text-primary-500'}`} />
-                                                    <span>{opt.label}</span>
+                                                    <statusOption.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-slate-450 group-hover:text-primary-500'}`} />
+                                                    <span>
+                                                        {statusOption.label}
+                                                    </span>
                                                 </div>
                                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${isActive ? 'bg-primary-700 text-primary-200' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                                    {opt.count}
+                                                    {statusOption.count}
                                                 </span>
                                             </button>
                                         );
@@ -258,20 +327,22 @@ const PortalUserTab = ({ currentUser }) => {
                         {isStatsPopoverOpen && (
                             <div className="absolute left-0 mt-2 w-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[1000] p-3 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-2">
-                                    {[
-                                        { label: 'Administrators', value: users.filter(u => u.role === 'admin').length, icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-500/10' },
-                                        { label: 'Registered Users', value: users.filter(u => u.role === 'user').length, icon: UserCircle, color: 'text-blue-600', bg: 'bg-blue-500/10' },
-                                        { label: 'Guest Signers', value: users.filter(u => u.role === 'guest').length, icon: Briefcase, color: 'text-amber-600', bg: 'bg-amber-500/10' },
-                                        { label: 'Total users', value: users.length, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-500/10' }
-                                    ].map((stat, i) => (
-                                        <div key={i} className="flex items-center justify-between p-2 rounded-[5px] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                    {userStatCards.map((userStat, statIndex) => (
+                                        <div 
+                                            key={statIndex} 
+                                            className="flex items-center justify-between p-2 rounded-[5px] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                                        >
                                             <div className="flex items-center gap-3">
-                                                <div className={`h-8 w-8 rounded-[5px] flex items-center justify-center ${stat.bg}`}>
-                                                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                                                <div className={`h-8 w-8 rounded-[5px] flex items-center justify-center ${userStat.bg}`}>
+                                                    <userStat.icon className={`h-4 w-4 ${userStat.color}`} />
                                                 </div>
-                                                <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">{stat.label}</span>
+                                                <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">
+                                                    {userStat.label}
+                                                </span>
                                             </div>
-                                            <span className="text-sm font-bold text-slate-900 dark:text-white">{stat.value}</span>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                {userStat.value}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -298,7 +369,9 @@ const PortalUserTab = ({ currentUser }) => {
                             className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-[5px] text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors"
                         >
                             <UserPlus className="h-4 w-4" />
-                            <span>Add User</span>
+                            <span>
+                                Add User
+                            </span>
                         </button>
                     )}
                 </div>
@@ -309,164 +382,264 @@ const PortalUserTab = ({ currentUser }) => {
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/50">
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 w-20 text-center">Action</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">User Name</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Email</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Designation</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Department</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Role</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Invitation Status</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Invitation Link</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Password Updated At</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">Action</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Added At</th>
-                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">Status Modified By</th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 w-20 text-center">
+                                    Action
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                                    User Name
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                    Email
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                    Designation
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                    Department
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                    Role
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                                    Invitation Status
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                                    Invitation Link
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                                    Password Updated At
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                    Action
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                                    Added At
+                                </th>
+                                <th className="px-6 py-4 text-[13px] font-medium text-gray-800 tracking-wider border-b border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                                    Status Modified By
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="12" className="px-6 py-20 text-center">
+                                    <td 
+                                        colSpan="12" 
+                                        className="px-6 py-20 text-center"
+                                    >
                                         <div className="flex flex-col items-center gap-3">
                                             <Loader2 className="h-6 w-6 text-primary-600 animate-spin" />
-                                            <span className="text-xs font-medium text-slate-500 tracking-widest">Fetching user database...</span>
+                                            <span className="text-xs font-medium text-slate-500 tracking-widest">
+                                                Fetching user database...
+                                            </span>
                                         </div>
                                     </td>
                                 </tr>
                             ) : filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="12" className="px-6 py-20 text-center">
+                                    <td 
+                                        colSpan="12" 
+                                        className="px-6 py-20 text-center"
+                                    >
                                         <div className="flex flex-col items-center gap-3 opacity-40">
                                             <Users className="h-12 w-12 text-slate-400" />
-                                            <p className="text-sm font-medium text-slate-500 tracking-widest">No matching users found</p>
+                                            <p className="text-sm font-medium text-slate-500 tracking-widest">
+                                                No matching users found
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>
-                            ) : currentItems.map((user, index) => (
-                                    <tr key={user._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="flex items-center justify-center relative">
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const nextId = openDropdownId === user._id ? null : user._id;
-                                                        setOpenDropdownId(nextId);
-                                                        if (nextId) {
-                                                            setIsFilterDropdownOpen(false);
-                                                            setRowsPerPageOpen(false);
-                                                        }
-                                                    }}
-                                                    className={`h-9 w-9 rounded-[5px] flex items-center justify-center transition-all
-                                                        ${openDropdownId === user._id 
-                                                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-white/5 shadow-sm' 
-                                                            : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                                                >
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </button>
+                            ) : currentItems.map((portalUser, userIndex) => (
+                                <tr 
+                                    key={portalUser._id} 
+                                    className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                                >
+                                    {/* Action Column */}
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="flex items-center justify-center relative">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const nextId = openDropdownId === portalUser._id ? null : portalUser._id;
+                                                    setOpenDropdownId(nextId);
+                                                    if (nextId) {
+                                                        setIsFilterDropdownOpen(false);
+                                                        setRowsPerPageOpen(false);
+                                                    }
+                                                }}
+                                                className={`h-9 w-9 rounded-[5px] flex items-center justify-center transition-all
+                                                    ${openDropdownId === portalUser._id 
+                                                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-white/5 shadow-sm' 
+                                                        : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                            >
+                                                <MoreVertical className="h-4 w-4" />
+                                            </button>
 
-                                                {openDropdownId === user._id && (
-                                                    <div className={`absolute ${index > 0 && index >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} left-0 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150`}>
-                                                        <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
-                                                            <p className="text-[10px] font-medium text-slate-400 tracking-widest">Modify access</p>
-                                                        </div>
-                                                        {['admin', 'user'].map(role => (
-                                                            <button
-                                                                key={role}
-                                                                onClick={() => handleRoleChange(user, role)}
-                                                                className={`w-full text-left px-3 py-2 text-xs font-medium capitalize rounded-[4px] transition-colors flex items-center justify-between
-                                                                    ${user.role === role 
-                                                                        ? 'text-primary-600 bg-primary-50/50 dark:bg-primary-900/10' 
-                                                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
-                                                            >
-                                                                {role}
-                                                                {user.role === role && <CheckCircle2 className="h-3 w-3" />}
-                                                            </button>
-                                                        ))}
-                                                        {currentUser?.role === 'admin' && user._id !== currentUser?._id && (
-                                                            <div className="mt-1 pt-1 border-t border-slate-100 dark:border-white/5">
-                                                                <button
-                                                                    onClick={() => setDeleteModal({ isOpen: true, userId: user._id })}
-                                                                    className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 rounded-[4px] hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2"
-                                                                >
-                                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                                    Delete account
-                                                                </button>
-                                                            </div>
-                                                        )}
+                                            {openDropdownId === portalUser._id && (
+                                                <div className={`absolute ${userIndex > 0 && userIndex >= currentItems.length - 2 ? 'bottom-full mb-1' : 'top-full mt-1'} left-0 w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150`}>
+                                                    <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 mb-1">
+                                                        <p className="text-[10px] font-medium text-slate-400 tracking-widest">
+                                                            Modify access
+                                                        </p>
                                                     </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-md
-                                                    ${index % 3 === 0 ? 'bg-gradient-to-br from-primary-500 to-primary-700' : 
-                                                      index % 3 === 1 ? 'bg-gradient-to-br from-indigo-500 to-indigo-700' : 
-                                                      'bg-gradient-to-br from-violet-500 to-violet-700'}`}>
-                                                    {user.name?.charAt(0).toUpperCase()}
+                                                    {AVAILABLE_ROLES.map((roleName) => (
+                                                        <button
+                                                            key={roleName}
+                                                            onClick={() => handleRoleChange(portalUser, roleName)}
+                                                            className={`w-full text-left px-3 py-2 text-xs font-medium capitalize rounded-[4px] transition-colors flex items-center justify-between
+                                                                ${portalUser.role === roleName 
+                                                                    ? 'text-primary-600 bg-primary-50/50 dark:bg-primary-900/10' 
+                                                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                                                        >
+                                                            <span>
+                                                                {roleName}
+                                                            </span>
+                                                            {portalUser.role === roleName && (
+                                                                <CheckCircle2 className="h-3 w-3" />
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                    {currentUser?.role === 'admin' && portalUser._id !== currentUser?._id && (
+                                                        <div className="mt-1 pt-1 border-t border-slate-100 dark:border-white/5">
+                                                            <button
+                                                                onClick={() => setDeleteModal({ isOpen: true, userId: portalUser._id })}
+                                                                className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 rounded-[4px] hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors flex items-center gap-2"
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                                <span>
+                                                                    Delete account
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white capitalize">{user.name}</p>
-                                                    <p className="text-[11px] font-medium text-slate-400 tracking-tight">UID: {user._id.slice(-6)}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                                                <Mail className="h-4 w-4 opacity-50" />
-                                                <span className="text-sm font-medium">{user.email}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">{user.jobTitle || '-'}</span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">{user.department || '-'}</span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-medium tracking-wider ${getRoleBadgeStyle(user.role)}`}>
-                                                {getRoleIcon(user.role)}
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            {user.isInvited ? <span className="text-slate-500">Sent</span> : <span className="text-emerald-500">Accepted</span>}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            {user.isInvited ? (
-                                                <button className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-full text-[11px] font-medium transition-colors shadow-sm">Link</button>
-                                            ) : (
-                                                <span className="text-[13px] text-slate-400">No link found</span>
                                             )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
-                                            {user.passwordUpdatedAt ? new Date(user.passwordUpdatedAt).toLocaleString('en-GB') : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-2">
-                                                <div 
-                                                    className={`w-9 h-5 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${user.isActive !== false ? 'bg-primary-500' : 'bg-slate-300'}`}
-                                                    onClick={() => setToggleModal({
-                                                        isOpen: true,
-                                                        userId: user._id,
-                                                        isActive: user.isActive,
-                                                        userName: user.name
-                                                    })}
-                                                >
-                                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${user.isActive !== false ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                                </div>
-                                                <span className="text-[11px] font-medium text-slate-600">{user.isActive !== false ? 'Active' : 'Inactive'}</span>
+                                        </div>
+                                    </td>
+
+                                    {/* User Name Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-md
+                                                ${userIndex % 3 === 0 ? 'bg-gradient-to-br from-primary-500 to-primary-700' : 
+                                                  userIndex % 3 === 1 ? 'bg-gradient-to-br from-indigo-500 to-indigo-700' : 
+                                                  'bg-gradient-to-br from-violet-500 to-violet-700'}`}>
+                                                {portalUser.name?.charAt(0).toUpperCase()}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
-                                            {new Date(user.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
-                                            {user.statusChangedBy ? `${user.isActive !== false ? 'Activated by' : 'Deactivated by'} ${user.statusChangedBy}` : '-'}
-                                        </td>
-                                    </tr>
-                                ))
-                            }
+                                            <div>
+                                                <p className="text-sm font-semibold text-slate-900 dark:text-white capitalize">
+                                                    {portalUser.name}
+                                                </p>
+                                                <p className="text-[11px] font-medium text-slate-400 tracking-tight">
+                                                    UID: {portalUser._id.slice(-6)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    {/* Email Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                                            <Mail className="h-4 w-4 opacity-50" />
+                                            <span className="text-sm font-medium">
+                                                {portalUser.email}
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    {/* Designation Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">
+                                            {portalUser.jobTitle || '-'}
+                                        </span>
+                                    </td>
+
+                                    {/* Department Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">
+                                            {portalUser.department || '-'}
+                                        </span>
+                                    </td>
+
+                                    {/* Role Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-medium tracking-wider ${getRoleBadgeStyle(portalUser.role)}`}>
+                                            {getRoleIcon(portalUser.role)}
+                                            <span>
+                                                {portalUser.role}
+                                            </span>
+                                        </span>
+                                    </td>
+
+                                    {/* Invitation Status Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        {portalUser.isInvited ? (
+                                            <span className="text-slate-500">
+                                                Sent
+                                            </span>
+                                        ) : (
+                                            <span className="text-emerald-500">
+                                                Accepted
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    {/* Invitation Link Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {portalUser.isInvited ? (
+                                            <button className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-full text-[11px] font-medium transition-colors shadow-sm">
+                                                Link
+                                            </button>
+                                        ) : (
+                                            <span className="text-[13px] text-slate-400">
+                                                No link found
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    {/* Password Updated At Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
+                                        {portalUser.passwordUpdatedAt ? new Date(portalUser.passwordUpdatedAt).toLocaleString('en-GB') : '-'}
+                                    </td>
+
+                                    {/* Action (Toggle Active) Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-2">
+                                            <div 
+                                                className={`w-9 h-5 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${portalUser.isActive !== false ? 'bg-primary-500' : 'bg-slate-300'}`}
+                                                onClick={() => setToggleModal({
+                                                    isOpen: true,
+                                                    userId: portalUser._id,
+                                                    isActive: portalUser.isActive,
+                                                    userName: portalUser.name
+                                                })}
+                                            >
+                                                <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${portalUser.isActive !== false ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                            </div>
+                                            <span className="text-[11px] font-medium text-slate-600">
+                                                {portalUser.isActive !== false ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    {/* Added At Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
+                                        {new Date(portalUser.createdAt).toLocaleString('en-GB', { 
+                                            day: '2-digit', 
+                                            month: '2-digit', 
+                                            year: 'numeric', 
+                                            hour: '2-digit', 
+                                            minute: '2-digit', 
+                                            hour12: true 
+                                        })}
+                                    </td>
+
+                                    {/* Status Modified By Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-[13px] text-slate-600 dark:text-slate-400">
+                                        {portalUser.statusChangedBy ? `${portalUser.isActive !== false ? 'Activated by' : 'Deactivated by'} ${portalUser.statusChangedBy}` : '-'}
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -480,7 +653,9 @@ const PortalUserTab = ({ currentUser }) => {
                     </p>
                     <div className="flex items-center gap-4 ml-auto">
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">Rows per page:</span>
+                            <span className="text-xs text-slate-500 font-bold capitalize tracking-wide">
+                                Rows per page:
+                            </span>
                             <div className="relative">
                                 <button
                                     onClick={(e) => {
@@ -495,26 +670,28 @@ const PortalUserTab = ({ currentUser }) => {
                                     className={`flex items-center gap-3 bg-white dark:bg-slate-900 border text-xs font-bold text-slate-700 dark:text-slate-300 rounded-[5px] pl-3 pr-2 py-1.5 transition-all min-w-[64px] justify-between
                                         ${rowsPerPageOpen ? 'border-primary-500 ring-1 ring-primary-500/10' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}
                                 >
-                                    {itemsPerPage}
+                                    <span>
+                                        {itemsPerPage}
+                                    </span>
                                     <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${rowsPerPageOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
                                 {rowsPerPageOpen && (
                                     <div className="absolute bottom-full mb-2 left-0 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] shadow-2xl z-[100] p-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                                        {[10, 20, 30, 40].map(val => (
+                                        {ROWS_PER_PAGE_OPTIONS.map((pageSize) => (
                                             <button
-                                                key={val}
+                                                key={pageSize}
                                                 onClick={() => {
-                                                    setItemsPerPage(val);
+                                                    setItemsPerPage(pageSize);
                                                     setCurrentPage(1);
                                                     setRowsPerPageOpen(false);
                                                 }}
                                                 className={`w-full text-left px-3 py-2 text-xs font-bold rounded-[3px] transition-colors
-                                                    ${itemsPerPage === val 
+                                                    ${itemsPerPage === pageSize 
                                                         ? 'bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-white' 
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'}`}
                                             >
-                                                {val}
+                                                {pageSize}
                                             </button>
                                         ))}
                                     </div>
@@ -527,14 +704,14 @@ const PortalUserTab = ({ currentUser }) => {
                         <div className="flex items-center gap-1.5">
                             <button
                                 disabled={currentPage <= 1}
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                 className="h-9 w-9 rounded-[5px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 disabled:opacity-30 transition-all hover:bg-slate-50"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
                             <button
                                 disabled={currentPage >= totalPages || totalPages === 0}
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                                 className="h-9 w-9 rounded-[5px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 disabled:opacity-30 transition-all hover:bg-slate-50"
                             >
                                 <ChevronRight className="h-4 w-4" />

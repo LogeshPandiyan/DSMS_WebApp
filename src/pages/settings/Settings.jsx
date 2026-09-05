@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Users, PenTool, Bell, Shield, Loader2, ShieldAlert } from 'lucide-react';
+import { User, Users, PenTool, Bell, Shield, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { useOutletContext, useLocation, useNavigate } from 'react-router-dom';
 import { getMe, updateProfile, updateSignature, updateNotifications, updatePassword } from '../../services/authService';
@@ -10,6 +10,39 @@ import PortalUserTab from './PortalUserTab';
 import SignatureTab from './SignatureTab';
 import NotificationsTab from './NotificationsTab';
 import SecurityTab from './SecurityTab';
+
+const SETTINGS_TAB_CONFIGS = [
+    { 
+        id: 'profile', 
+        label: 'Profile', 
+        icon: User, 
+        roles: ['admin', 'user'] 
+    },
+    { 
+        id: 'portal-user', 
+        label: 'Portal user', 
+        icon: Users, 
+        roles: ['admin'] 
+    },
+    { 
+        id: 'signature', 
+        label: 'Signature', 
+        icon: PenTool, 
+        roles: ['admin', 'user'] 
+    },
+    { 
+        id: 'notifications', 
+        label: 'Notifications', 
+        icon: Bell, 
+        roles: ['admin', 'user'] 
+    },
+    { 
+        id: 'security', 
+        label: 'Security', 
+        icon: Shield, 
+        roles: ['admin', 'user'] 
+    }
+];
 
 const Settings = () => {
     const { user: currentUser, setUser: setGlobalUser } = useOutletContext();
@@ -91,8 +124,8 @@ const Settings = () => {
         navigate(`?tab=${tabId}`);
     };
 
-    const handleProfileUpdate = async (e) => {
-        e.preventDefault();
+    const handleProfileUpdate = async (event) => {
+        event.preventDefault();
         setLoading(true);
         try {
             const response = await updateProfile({ 
@@ -119,20 +152,20 @@ const Settings = () => {
     const clearSignature = () => {
         if (sigType === 'draw') {
             sigPad.current?.clear();
-        }
+        } 
         else {
             setUploadedSignature(null);
         }
     };
 
-    const handleSignatureUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setUploadedSignature(reader.result);
+    const handleSignatureUpload = (event) => {
+        const selectedFile = event.target.files[0];
+        if (selectedFile) {
+            const fileReader = new FileReader();
+            fileReader.onloadend = () => {
+                setUploadedSignature(fileReader.result);
             };
-            reader.readAsDataURL(file);
+            fileReader.readAsDataURL(selectedFile);
         }
     };
 
@@ -145,12 +178,10 @@ const Settings = () => {
             }
             
             try {
-                // getCanvas gets the raw HTML canvas element directly, avoiding buggy trimming logic
                 const canvas = sigPad.current.getCanvas();
                 signatureData = canvas.toDataURL('image/png');
-                
-                // Optional: Check if it's literally an empty canvas string, but we trust the user clicked save after drawing
-            } catch (err) {
+            } 
+            catch (err) {
                 console.error("Signature extraction error", err);
                 return toast.error('Failed to process signature image');
             }
@@ -178,25 +209,27 @@ const Settings = () => {
         }
     };
 
-    const handleNotificationToggle = async (key, value) => {
-        // Optimistic UI update
-        const newNotifications = { ...notifications, [key]: value };
-        setNotifications(newNotifications);
+    const handleNotificationToggle = async (notificationKey, notificationValue) => {
+        const updatedNotifications = { 
+            ...notifications, 
+            [notificationKey]: notificationValue 
+        };
+        setNotifications(updatedNotifications);
         
         try {
-            const response = await updateNotifications(newNotifications);
+            const response = await updateNotifications(updatedNotifications);
             setUserData(response.data);
             setGlobalUser(response.data);
             toast.success('Notification preferences updated');
-        } catch {
-            // Revert on failure
+        } 
+        catch {
             setNotifications(notifications);
             toast.error('Failed to update notifications');
         }
     };
 
-    const handlePasswordUpdate = async (e) => {
-        e.preventDefault();
+    const handlePasswordUpdate = async (event) => {
+        event.preventDefault();
         if (passwords.new !== passwords.confirm) {
             return toast.error('Passwords do not match');
         }
@@ -207,10 +240,16 @@ const Settings = () => {
                 newPassword: passwords.new
             });
             toast.success('Password updated successfully');
-            setPasswords({ current: '', new: '', confirm: '' });
-        } catch (error) {
+            setPasswords({ 
+                current: '', 
+                new: '', 
+                confirm: '' 
+            });
+        } 
+        catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update password');
-        } finally {
+        } 
+        finally {
             setLoading(false);
         }
     };
@@ -219,7 +258,9 @@ const Settings = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <div className="h-10 w-10 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
-                <p className="text-xs text-slate-400 font-medium tracking-wide">Loading preferences...</p>
+                <p className="text-xs text-slate-400 font-medium tracking-wide">
+                    Loading preferences...
+                </p>
             </div>
         );
     }
@@ -227,7 +268,9 @@ const Settings = () => {
     if (!userData) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <p className="text-sm text-slate-500 font-medium">Failed to load user settings.</p>
+                <p className="text-sm text-slate-500 font-medium">
+                    Failed to load user settings.
+                </p>
                 <button 
                     onClick={() => window.location.reload()}
                     className="text-primary-600 hover:underline text-xs font-medium"
@@ -238,15 +281,11 @@ const Settings = () => {
         );
     }
 
-    const tabs = [
-        { id: 'profile', label: 'Profile', icon: User, roles: ['admin', 'user'] },
-        { id: 'portal-user', label: 'Portal user', icon: Users, roles: ['admin'] },
-        { id: 'signature', label: 'Signature', icon: PenTool, roles: ['admin', 'user'] },
-        { id: 'notifications', label: 'Notifications', icon: Bell, roles: ['admin', 'user'] },
-        { id: 'security', label: 'Security', icon: Shield, roles: ['admin', 'user'] },
-    ].filter(tab => tab.roles.includes(userData?.role));
+    const visibleTabs = SETTINGS_TAB_CONFIGS.filter((tabConfig) => 
+        tabConfig.roles.includes(userData?.role)
+    );
 
-    const isValidTab = tabs.some(tab => tab.id === activeTab);
+    const isValidTab = visibleTabs.some((tabConfig) => tabConfig.id === activeTab);
 
     return (
         <div className="w-full space-y-6 animate-in fade-in duration-500 pb-20">
@@ -254,18 +293,20 @@ const Settings = () => {
                 {/* Horizontal Tab Navigation */}
                 <div className="flex flex-col md:flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 px-2 bg-slate-50/50 dark:bg-white/[0.02]">
                     <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-2">
-                        {tabs.map((tab) => (
+                        {visibleTabs.map((settingsTab) => (
                             <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                key={settingsTab.id}
+                                onClick={() => setActiveTab(settingsTab.id)}
                                 className={`flex items-center gap-2.5 px-5 py-2 rounded-[5px] text-[12px] font-medium tracking-wide transition-all relative whitespace-nowrap ${
-                                    activeTab === tab.id
+                                    activeTab === settingsTab.id
                                         ? 'bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white'
                                         : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 dark:text-slate-400 dark:hover:text-white'
                                 }`}
                             >
-                                <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`} />
-                                {tab.label}
+                                <settingsTab.icon className={`h-4 w-4 ${activeTab === settingsTab.id ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`} />
+                                <span>
+                                    {settingsTab.label}
+                                </span>
                             </button>
                         ))}
                     </nav>
@@ -276,7 +317,9 @@ const Settings = () => {
                     {!isValidTab ? (
                         <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 space-y-4">
                             <ShieldAlert className="h-12 w-12 text-[#12b79f]" />
-                            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Settings Tab Not Found</h3>
+                            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                                Settings Tab Not Found
+                            </h3>
                             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
                                 The settings tab you are trying to access does not exist.
                             </p>
