@@ -33,61 +33,81 @@ const UserDropdown = ({ user, onLogout }) => {
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
-                    {/* Top Triangle Arrow Pointer */}
-                    <div className="absolute right-[14px] -top-[6px] w-3 h-3 rotate-45 bg-slate-50 dark:bg-[#151d30] border-t border-l border-slate-200 dark:border-white/5 z-0"></div>
-                    
-                    <div className="p-5 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 rounded-t-[5px] relative z-10">
-                        <p className="text-[12px] text-slate-500 font-bold mb-4">My Account</p>
+                <>
+                    <div 
+                        className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[5px] shadow-2xl z-[100]"
+                        style={{
+                            animation: 'dropdownSlideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                            willChange: 'transform, opacity'
+                        }}
+                    >
+                        {/* Top Triangle Arrow Pointer */}
+                        <div className="absolute right-[14px] -top-[6px] w-3 h-3 rotate-45 bg-slate-50 dark:bg-[#151d30] border-t border-l border-slate-200 dark:border-white/5 z-0"></div>
                         
-                        <div className="space-y-4">
-                            {/* Name */}
-                            <div className="space-y-0.5">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Name</p>
-                                <p className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    {user?.name}
-                                    {/* <span className="text-[10px] text-primary-500 font-medium lowercase">(you)</span> */}
-                                </p>
-                            </div>
+                        <div className="p-5 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 rounded-t-[5px] relative z-10">
+                            <p className="text-[12px] text-slate-500 font-bold mb-4">My Account</p>
+                            
+                            <div className="space-y-4">
+                                {/* Name */}
+                                <div className="space-y-0.5">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Name</p>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                        {user?.name}
+                                    </p>
+                                </div>
 
-                            {/* Email */}
-                            <div className="space-y-0.5">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Email</p>
-                                <p className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">
-                                    {user?.email}
-                                </p>
-                            </div>
+                                {/* Email */}
+                                <div className="space-y-0.5">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Email</p>
+                                    <p className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">
+                                        {user?.email}
+                                    </p>
+                                </div>
 
-                            {/* Role */}
-                            <div className="flex items-center gap-2">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Role</p>
-                                <span className={`inline-flex px-1 rounded-md text-[10px] font-bold uppercase tracking-wider border transition-all ${
-                                    user?.role?.toLowerCase() === 'admin' ? 
-                                    'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20' : 
-                                    user?.role?.toLowerCase() === 'guest' ? 
-                                    'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20' : 
-                                    'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
-                                }`}>
-                                    {user?.role || 'User'}
-                                </span>
+                                {/* Role */}
+                                <div className="flex items-center gap-2">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Role</p>
+                                    <span className={`inline-flex px-1 rounded-md text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                                        user?.role?.toLowerCase() === 'admin' ? 
+                                        'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20' : 
+                                        user?.role?.toLowerCase() === 'guest' ? 
+                                        'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20' : 
+                                        'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
+                                    }`}>
+                                        {user?.role || 'User'}
+                                    </span>
+                                </div>
                             </div>
+                        </div>
+
+                        <div className="p-2 border-t border-slate-100 dark:border-white/5">
+                            <button 
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    onLogout();
+                                }}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-[5px] text-red-400 hover:bg-red-500/10 transition-all text-sm font-bold active:scale-[0.98]"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                Sign Out
+                            </button>
                         </div>
                     </div>
 
-
-                    <div className="p-2 border-t border-slate-100 dark:border-white/5">
-                        <button 
-                            onClick={() => {
-                                setIsOpen(false);
-                                onLogout();
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-[5px] text-red-400 hover:bg-red-500/10 transition-all text-sm font-bold"
-                        >
-                            <LogOut className="h-4 w-4" />
-                            Sign Out
-                        </button>
-                    </div>
-                </div>
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
+                        @keyframes dropdownSlideDown {
+                            0% {
+                                opacity: 0;
+                                transform: translateY(-12px) scale(0.96);
+                            }
+                            100% {
+                                opacity: 1;
+                                transform: translateY(0) scale(1);
+                            }
+                        }
+                    `}} />
+                </>
             )}
         </div>
     );

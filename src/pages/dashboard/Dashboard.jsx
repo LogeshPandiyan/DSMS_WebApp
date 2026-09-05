@@ -249,7 +249,7 @@ const Dashboard = () => {
                         )}
 
                         <div className="space-y-2">
-                            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                            <h2 className="text-4xl md:text-[40px] font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-4">
                                 {greeting}, 
                                 <span 
                                 style={{ color: brandColor }}>
@@ -321,7 +321,7 @@ const Dashboard = () => {
             {/* Activity & Quick Actions Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-10">
                 {/* Visual Activity Chart (Sun - Sat) */}
-                <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-6 shadow-sm flex flex-col gap-8 group">
+                <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[5px] p-4 shadow-sm flex flex-col gap-8 group">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 bg-[#12b79f]/10 rounded-[5px] flex items-center justify-center text-[#12b79f] transition-transform group-hover:scale-110">
@@ -335,11 +335,11 @@ const Dashboard = () => {
 
                         {/* Interactive Week Range Picker */}
                         <div className="flex items-center gap-2.5">
-                            <div className="flex items-center bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-[6px] p-1 shadow-sm">
+                            <div className="flex items-center bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-full shadow-sm">
                                 <button
                                     onClick={handlePrevWeek}
                                     title="Previous Week"
-                                    className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-[4px] transition-all active:scale-95 hover:text-primary-600"
+                                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full transition-all active:scale-95 hover:text-primary-600"
                                 >
                                     <ChevronLeft className="h-3.5 w-3.5" />
                                 </button>
@@ -352,7 +352,7 @@ const Dashboard = () => {
                                 <button
                                     onClick={handleNextWeek}
                                     title="Next Week"
-                                    className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-[4px] transition-all active:scale-95 hover:text-primary-600"
+                                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full transition-all active:scale-95 hover:text-primary-600"
                                 >
                                     <ChevronRight className="h-3.5 w-3.5" />
                                 </button>
